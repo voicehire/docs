@@ -1,97 +1,387 @@
 ---
-title: 'Quickstart'
-description: 'Start building awesome documentation in under 5 minutes'
+title: Démarrage rapide
+description: "Commencez à utiliser l'API VoiceHire en 5 minutes"
 ---
 
-## Setup your development
+# Démarrage rapide
 
-Learn how to update your docs locally and deploy them to the public.
+Ce guide vous permettra de faire vos premières requêtes à l'API VoiceHire en quelques minutes.
 
-### Edit and preview
+## Prérequis
 
-<AccordionGroup>
-  <Accordion icon="github" title="Clone your docs locally">
-    During the onboarding process, we created a repository on your Github with
-    your docs content. You can find this repository on our
-    [dashboard](https://dashboard.mintlify.com). To clone the repository
-    locally, follow these
-    [instructions](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-    in your terminal.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Preview changes">
-    Previewing helps you make sure your changes look as intended. We built a
-    command line interface to render these changes locally. 
-    1. Install the
-    [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the
-    documentation changes locally with this command: ``` npm i -g mintlify ```
-    2. Run the following command at the root of your documentation (where
-    `docs.json` is): ``` mintlify dev ```
-    <Note>
-      If you’re currently using the legacy ```mint.json``` configuration file, please update the Mintlify CLI:
+Avant de commencer, assurez-vous d'avoir :
 
+- Un compte VoiceHire actif avec des crédits disponibles
+- Votre clé API (voir [Authentification](/authentication))
+- Un outil pour faire des requêtes HTTP (cURL, Postman, ou un langage de programmation)
 
-      ```npm i -g mintlify@latest```
-      And run the new upgrade command in your docs repository:
+## 1. Vérifier votre connexion
 
-      ```mintlify upgrade```
-      You should now be using the new ```docs.json``` configuration file. Feel free to delete the ```mint.json``` file from your repository.
-    </Note>
-  </Accordion>
-</AccordionGroup>
+Commençons par vérifier que votre clé API fonctionne en récupérant vos informations de crédits :
 
-### Deploy your changes
+<CodeGroup>
 
-<AccordionGroup>
+```bash cURL
+curl -X GET https://app.voicehire.io/api/v1/account/credits \
+  -H "X-API-Key: vh_live_VOTRE_CLE_API"
+```
 
-<Accordion icon="message-bot" title="Install our Github app">
-  Our Github app automatically deploys your changes to your docs site, so you
-  don't need to manage deployments yourself. You can find the link to install on
-  your [dashboard](https://dashboard.mintlify.com). Once the bot has been
-  successfully installed, there should be a check mark next to the commit hash
-  of the repo.
-</Accordion>
-<Accordion icon="rocket" title="Push your changes">
-  [Commit and push your changes to
-  Git](https://docs.github.com/en/get-started/using-git/pushing-commits-to-a-remote-repository#about-git-push)
-  for your changes to update in your docs site. If you push and don't see that
-  the Github app successfully deployed your changes, you can also manually
-  update your docs through our [dashboard](https://dashboard.mintlify.com).
-</Accordion>
+```python Python
+import httpx
 
-</AccordionGroup>
+headers = {"X-API-Key": "vh_live_VOTRE_CLE_API"}
 
-## Update your docs
+response = httpx.get(
+    "https://app.voicehire.io/api/v1/account/credits",
+    headers=headers
+)
 
-Add content directly in your files with MDX syntax and React components. You can use any of our components, or even build your own.
+print(response.json())
+```
 
-<CardGroup>
+```javascript Node.js
+const response = await fetch('https://app.voicehire.io/api/v1/account/credits', {
+  headers: {
+    'X-API-Key': 'vh_live_VOTRE_CLE_API'
+  }
+});
 
-<Card title="Add Content With MDX" icon="file" href="/essentials/markdown">
-  Add content to your docs with MDX syntax.
-</Card>
+const data = await response.json();
+console.log(data);
+```
 
-<Card
-  title="Add Code Blocks"
-  icon="square-code"
-  href="/essentials/code"
->
-  Add code directly to your docs with syntax highlighting.
-</Card>
+</CodeGroup>
 
-<Card
-  title="Add Images"
-  icon="image"
-  href="/essentials/images"
->
-  Add images to your docs to make them more engaging.
-</Card>
+Réponse attendue :
+```json
+{
+  "credits_available": 100.0,
+  "credits_used_this_month": 0,
+  "reset_date": "2025-08-01",
+  "subscription_type": "VoiceHire Echo"
+}
+```
 
-<Card
-  title="Add Custom Components"
-  icon="puzzle-piece"
-  href="/essentials/reusable-snippets"
->
-  Add templates to your docs to make them more reusable.
-</Card>
+## 2. Créer votre première campagne
 
+Maintenant, créons une campagne de recrutement. L'API génèrera automatiquement 6 questions d'entretien adaptées au poste :
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://app.voicehire.io/api/v1/campaigns \
+  -H "X-API-Key: vh_live_VOTRE_CLE_API" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "job_title": "Commercial B2B",
+    "contract_type": "CDI",
+    "job_description": "Nous recherchons un commercial B2B expérimenté pour développer notre portefeuille clients. Missions : prospection, négociation, closing. 3 ans d'expérience minimum.",
+    "client_name": "Ma Société",
+    "enable_salary_question": true
+  }'
+```
+
+```python Python
+import httpx
+
+headers = {
+    "X-API-Key": "vh_live_VOTRE_CLE_API",
+    "Content-Type": "application/json"
+}
+
+campaign_data = {
+    "job_title": "Commercial B2B",
+    "contract_type": "CDI",
+    "job_description": """Nous recherchons un commercial B2B expérimenté 
+    pour développer notre portefeuille clients. 
+    Missions : prospection, négociation, closing. 
+    3 ans d'expérience minimum.""",
+    "client_name": "Ma Société",
+    "enable_salary_question": True
+}
+
+response = httpx.post(
+    "https://app.voicehire.io/api/v1/campaigns",
+    headers=headers,
+    json=campaign_data
+)
+
+print(response.json())
+```
+
+```javascript Node.js
+const campaignData = {
+  job_title: "Commercial B2B",
+  contract_type: "CDI",
+  job_description: `Nous recherchons un commercial B2B expérimenté 
+    pour développer notre portefeuille clients. 
+    Missions : prospection, négociation, closing. 
+    3 ans d'expérience minimum.`,
+  client_name: "Ma Société",
+  enable_salary_question: true
+};
+
+const response = await fetch('https://app.voicehire.io/api/v1/campaigns', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'vh_live_VOTRE_CLE_API',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(campaignData)
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+</CodeGroup>
+
+Réponse attendue :
+```json
+{
+  "campaign_id": "CAMP-20250701-ABC123",
+  "candidate_link": "https://app.voicehire.io/postuler/CAMP-20250701-ABC123",
+  "status": "active",
+  "questions_generated": 6,
+  "questions_source": "ai"
+}
+```
+
+<Tip>
+  Conservez le `campaign_id` retourné, vous en aurez besoin pour les prochaines étapes.
+</Tip>
+
+## 3. Ajouter des candidats
+
+Ajoutons maintenant des candidats à votre campagne. Les appels téléphoniques seront automatiquement déclenchés :
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://app.voicehire.io/api/v1/campaigns/CAMP-20250701-ABC123/candidates \
+  -H "X-API-Key: vh_live_VOTRE_CLE_API" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "candidates": [
+      {
+        "first_name": "Jean",
+        "last_name": "Dupont",
+        "phone_number": "+33612345678",
+        "email": "jean.dupont@example.com"
+      },
+      {
+        "first_name": "Marie",
+        "last_name": "Martin",
+        "phone_number": "+33687654321"
+      }
+    ]
+  }'
+```
+
+```python Python
+candidates_data = {
+    "candidates": [
+        {
+            "first_name": "Jean",
+            "last_name": "Dupont",
+            "phone_number": "+33612345678",
+            "email": "jean.dupont@example.com"
+        },
+        {
+            "first_name": "Marie",
+            "last_name": "Martin",
+            "phone_number": "+33687654321"
+        }
+    ]
+}
+
+response = httpx.post(
+    f"https://app.voicehire.io/api/v1/campaigns/{campaign_id}/candidates",
+    headers=headers,
+    json=candidates_data
+)
+
+print(response.json())
+```
+
+```javascript Node.js
+const candidatesData = {
+  candidates: [
+    {
+      first_name: "Jean",
+      last_name: "Dupont",
+      phone_number: "+33612345678",
+      email: "jean.dupont@example.com"
+    },
+    {
+      first_name: "Marie",
+      last_name: "Martin",
+      phone_number: "+33687654321"
+    }
+  ]
+};
+
+const response = await fetch(`https://app.voicehire.io/api/v1/campaigns/${campaignId}/candidates`, {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'vh_live_VOTRE_CLE_API',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(candidatesData)
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+</CodeGroup>
+
+Réponse attendue :
+```json
+{
+  "added": 2,
+  "duplicates": 0,
+  "invalid": 0,
+  "calls_queued": 2
+}
+```
+
+## 4. Suivre le statut de votre campagne
+
+Vérifiez l'avancement de votre campagne et les statistiques :
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://app.voicehire.io/api/v1/campaigns/CAMP-20250701-ABC123/status \
+  -H "X-API-Key: vh_live_VOTRE_CLE_API"
+```
+
+```python Python
+response = httpx.get(
+    f"https://app.voicehire.io/api/v1/campaigns/{campaign_id}/status",
+    headers=headers
+)
+
+print(response.json())
+```
+
+```javascript Node.js
+const response = await fetch(`https://app.voicehire.io/api/v1/campaigns/${campaignId}/status`, {
+  headers: {
+    'X-API-Key': 'vh_live_VOTRE_CLE_API'
+  }
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+</CodeGroup>
+
+## Prochaines étapes
+
+Félicitations ! Vous avez créé votre première campagne et ajouté des candidats. Voici ce que vous pouvez faire ensuite :
+
+<CardGroup cols={2}>
+  <Card
+    title="Explorer les endpoints"
+    icon="compass"
+    href="/api-reference/introduction"
+  >
+    Découvrez tous les endpoints disponibles
+  </Card>
+  <Card
+    title="Sourcing par SMS"
+    icon="message"
+    href="/api-reference/candidates/source-candidates"
+  >
+    Apprenez à inviter des candidats par SMS
+  </Card>
+  <Card
+    title="Récupérer les détails"
+    icon="file-alt"
+    href="/api-reference/candidates/get-candidate-details"
+  >
+    Accédez aux transcriptions et scores
+  </Card>
+  <Card
+    title="Gérer les erreurs"
+    icon="triangle-exclamation"
+    href="/guides/errors"
+  >
+    Comprendre et gérer les erreurs API
+  </Card>
 </CardGroup>
+
+## Exemple complet
+
+Voici un exemple complet en Python qui crée une campagne et suit son évolution :
+
+```python
+import httpx
+import time
+
+# Configuration
+API_KEY = "vh_live_VOTRE_CLE_API"
+BASE_URL = "https://app.voicehire.io/api/v1"
+
+headers = {
+    "X-API-Key": API_KEY,
+    "Content-Type": "application/json"
+}
+
+# 1. Créer une campagne
+campaign_data = {
+    "job_title": "Développeur Full Stack",
+    "contract_type": "CDI",
+    "job_description": "Nous recherchons un développeur Full Stack...",
+    "enable_salary_question": True
+}
+
+response = httpx.post(f"{BASE_URL}/campaigns", headers=headers, json=campaign_data)
+campaign = response.json()
+campaign_id = campaign['campaign_id']
+
+print(f"✅ Campagne créée: {campaign_id}")
+print(f"🔗 Lien candidat: {campaign['candidate_link']}")
+
+# 2. Ajouter des candidats
+candidates_data = {
+    "candidates": [
+        {
+            "first_name": "Test",
+            "last_name": "Candidat",
+            "phone_number": "+33612345678"
+        }
+    ]
+}
+
+response = httpx.post(
+    f"{BASE_URL}/campaigns/{campaign_id}/candidates", 
+    headers=headers, 
+    json=candidates_data
+)
+print(f"✅ {response.json()['added']} candidat(s) ajouté(s)")
+
+# 3. Attendre et vérifier le statut
+print("⏳ Attente de 30 secondes...")
+time.sleep(30)
+
+response = httpx.get(f"{BASE_URL}/campaigns/{campaign_id}/status", headers=headers)
+status = response.json()
+stats = status['stats']
+
+print(f"📊 Statistiques:")
+print(f"   - Total candidats: {stats['total_candidates']}")
+print(f"   - Entretiens terminés: {stats['interviews_completed']}")
+print(f"   - Score moyen: {stats['average_score']}")
+```
+
+## Support
+
+Si vous rencontrez des problèmes :
+- Vérifiez que votre clé API est valide
+- Assurez-vous d'avoir des crédits disponibles
+- Consultez la [documentation des erreurs](/guides/errors)
+- Contactez le support à support@voicehire.io

@@ -1,35 +1,40 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "VoiceHire API Documentation",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#4F46E5",
+    "light": "#6366F1",
+    "dark": "#4338CA"
   },
   "favicon": "/favicon.svg",
+  "openapi": "openapi.yaml",
+  "api": {
+    "baseUrl": "https://app.voicehire.io",
+    "auth": {
+      "method": "key",
+      "name": "X-API-Key"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Démarrage",
             "pages": [
               "index",
               "quickstart",
-              "development"
+              "authentication"
             ]
           },
           {
-            "group": "Essentials",
+            "group": "Guides",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              "guides/webhooks",
+              "guides/rate-limits",
+              "guides/errors"
             ]
           }
         ]
@@ -38,18 +43,33 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "API Documentation",
+            "group": "Introduction",
             "pages": [
               "api-reference/introduction"
             ]
           },
           {
-            "group": "Endpoint Examples",
+            "group": "Campagnes",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/campaigns/list-campaigns",
+              "api-reference/campaigns/create-campaign",
+              "api-reference/campaigns/get-campaign-status",
+              "api-reference/campaigns/update-campaign-status"
+            ]
+          },
+          {
+            "group": "Candidats",
+            "pages": [
+              "api-reference/candidates/add-candidates",
+              "api-reference/candidates/source-candidates",
+              "api-reference/candidates/list-candidates",
+              "api-reference/candidates/get-candidate-details"
+            ]
+          },
+          {
+            "group": "Compte",
+            "pages": [
+              "api-reference/account/get-credits"
             ]
           }
         ]
@@ -58,19 +78,19 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Application VoiceHire",
+          "href": "https://app.voicehire.io",
+          "icon": "browser"
         },
         {
-          "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "slack"
+          "anchor": "Site Web",
+          "href": "https://www.voicehire.io",
+          "icon": "globe"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Support",
+          "href": "mailto:support@voicehire.io",
+          "icon": "envelope"
         }
       ]
     }
@@ -83,20 +103,13 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@voicehire.io"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "href": "https://app.voicehire.io"
     }
   }
 }

@@ -1,0 +1,143 @@
+---
+title: Authentification
+description: "Comment s'authentifier avec l'API VoiceHire"
+---
+
+# Authentification
+
+L'API VoiceHire utilise une authentification par clé API pour sécuriser l'accès aux ressources.
+
+## Obtenir votre clé API
+
+Pour obtenir votre clé API :
+
+1. Connectez-vous à votre compte VoiceHire sur [app.voicehire.io](https://app.voicehire.io)
+2. Accédez aux paramètres de votre agence
+3. Dans la section "API", générez une nouvelle clé API
+4. Copiez et conservez cette clé en lieu sûr
+
+<Warning>
+  Votre clé API donne accès complet à votre compte. Ne la partagez jamais publiquement et ne la commitez pas dans votre code source.
+</Warning>
+
+## Utiliser votre clé API
+
+Incluez votre clé API dans l'en-tête `X-API-Key` de chaque requête :
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://app.voicehire.io/api/v1/campaigns \
+  -H "X-API-Key: vh_live_VOTRE_CLE_API"
+```
+
+```python Python
+import httpx
+
+headers = {
+    "X-API-Key": "vh_live_VOTRE_CLE_API"
+}
+
+response = httpx.get(
+    "https://app.voicehire.io/api/v1/campaigns",
+    headers=headers
+)
+```
+
+```javascript Node.js
+const response = await fetch('https://app.voicehire.io/api/v1/campaigns', {
+  headers: {
+    'X-API-Key': 'vh_live_VOTRE_CLE_API'
+  }
+});
+```
+
+```php PHP
+$curl = curl_init();
+
+curl_setopt_array($curl, [
+  CURLOPT_URL => "https://app.voicehire.io/api/v1/campaigns",
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_HTTPHEADER => [
+    "X-API-Key: vh_live_VOTRE_CLE_API"
+  ],
+]);
+
+$response = curl_exec($curl);
+```
+
+</CodeGroup>
+
+## Format de la clé API
+
+Les clés API VoiceHire suivent le format :
+```
+vh_live_XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
+- Préfixe `vh_live_` pour les clés de production
+- 32+ caractères aléatoires
+
+## Erreurs d'authentification
+
+Si votre clé API est manquante ou invalide, vous recevrez une erreur 401 :
+
+```json
+{
+  "error": {
+    "code": "MISSING_API_KEY",
+    "message": "API key is required",
+    "details": {
+      "header": "X-API-Key"
+    }
+  }
+}
+```
+
+### Codes d'erreur possibles
+
+| Code | Description |
+|------|-------------|
+| `MISSING_API_KEY` | Aucune clé API fournie |
+| `INVALID_API_KEY_FORMAT` | Format de clé invalide |
+| `INVALID_API_KEY` | Clé API non reconnue |
+| `AGENCY_INACTIVE` | Compte agence désactivé |
+
+## Sécurité
+
+### Bonnes pratiques
+
+- **Variables d'environnement** : Stockez votre clé API dans des variables d'environnement
+- **Rotation régulière** : Changez votre clé API régulièrement
+- **Restrictions IP** : Limitez l'accès à des IP spécifiques (contactez le support)
+- **HTTPS uniquement** : Toutes les requêtes doivent utiliser HTTPS
+
+### Exemple avec variables d'environnement
+
+```python
+import os
+import httpx
+
+# Charger la clé depuis l'environnement
+api_key = os.getenv('VOICEHIRE_API_KEY')
+
+headers = {
+    "X-API-Key": api_key
+}
+
+# Utiliser la clé
+response = httpx.get(
+    "https://app.voicehire.io/api/v1/campaigns",
+    headers=headers
+)
+```
+
+## Limites et quotas
+
+Chaque clé API est soumise à des limites :
+
+- **Requêtes par minute** : 60
+- **Requêtes par heure** : 1000
+- **Taille max de requête** : 10 MB
+
+Si vous dépassez ces limites, vous recevrez une erreur 429 (Too Many Requests).

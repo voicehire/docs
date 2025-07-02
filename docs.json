@@ -49,12 +49,6 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "Introduction",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
             "group": "Campagnes",
             "pages": [
               "api-reference/campaigns/list-campaigns",

@@ -104,7 +104,9 @@
     "dark": "/logo/light.png"
   },
   "integrations": {
-    "intercom": "YOUR_INTERCOM_APP_ID"
+    "intercom": {
+      "appId": "YOUR_INTERCOM_APP_ID"
+    }
   },
   "analytics": {
     "ga4": {

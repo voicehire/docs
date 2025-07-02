@@ -27,35 +27,53 @@ description: 'Crée une nouvelle campagne de recrutement avec génération autom
 </ParamField>
 
 <ParamField body="additional_info" type="string">
-  Informations complémentaires sur le poste ou l'entreprise
+  Informations complémentaires sur le poste ou l'entreprise (optionnel)
 </ParamField>
 
 <ParamField body="client_name" type="string">
-  Nom de l'entreprise cliente (sera utilisé lors des appels)
+  Nom de l'entreprise cliente (sera utilisé lors des appels) (optionnel)
 </ParamField>
 
 <ParamField body="questions" type="array">
-  Questions personnalisées pour l'entretien (maximum 8)
+  Questions personnalisées pour l'entretien (maximum 8) (optionnel)
   
   Si non fourni, 6 questions seront générées automatiquement par IA
 </ParamField>
 
 <ParamField body="question_weights" type="array">
-  Poids associés à chaque question (requis si des questions sont fournies)
+  Poids associés à chaque question (requis si des questions sont fournies) (optionnel)
   
   Valeurs possibles pour chaque poids: `0`, `0.5`, `1`, `1.5`, `2`
 </ParamField>
 
 <ParamField body="enable_salary_question" type="boolean" default="true">
-  Activer la question sur les prétentions salariales
+  Activer la question sur les prétentions salariales (optionnel)
 </ParamField>
 
 <ParamField body="enable_job_search_question" type="boolean" default="true">
-  Activer la question sur la recherche d'emploi actuelle
+  Activer la question sur la recherche d'emploi actuelle (optionnel)
 </ParamField>
 
 <ParamField body="enable_availability_question" type="boolean" default="true">
-  Activer la question sur la disponibilité
+  Activer la question sur la disponibilité (optionnel)
+</ParamField>
+
+<ParamField body="enable_engage" type="boolean" default="null">
+  Active la présentation de votre structure par l'agent VoiceHire (optionnel)
+  
+  Si fourni, surcharge le réglage global de l'agence
+</ParamField>
+
+<ParamField body="enable_recapInterview" type="boolean" default="null">
+  Active l'explication du déroulé de l'entretien par l'agent VoiceHire (optionnel)
+  
+  Si fourni, surcharge le réglage global de l'agence
+</ParamField>
+
+<ParamField body="enable_recapJob" type="boolean" default="null">
+  Active la présentation du poste par l'agent VoiceHire (optionnel)
+  
+  Si fourni, surcharge le réglage global de l'agence
 </ParamField>
 
 ## Réponse
@@ -103,7 +121,10 @@ curl -X POST https://app.voicehire.io/api/v1/campaigns/create \
       "Quelle est votre expérience avec React et Node.js?",
       "Avez-vous déjà travaillé en méthodologie Agile?"
     ],
-    "question_weights": [2, 1.5]
+    "question_weights": [2, 1.5],
+    "enable_salary_question": true,
+    "enable_engage": true,
+    "enable_recapInterview": false
   }'
 ```
 
@@ -125,7 +146,10 @@ response = requests.post(
             "Quelle est votre expérience avec React et Node.js?",
             "Avez-vous déjà travaillé en méthodologie Agile?"
         ],
-        "question_weights": [2, 1.5]
+        "question_weights": [2, 1.5],
+        "enable_salary_question": true,
+        "enable_engage": true,
+        "enable_recapInterview": false
     }
 )
 ```
@@ -144,7 +168,10 @@ const response = await axios.post(
       'Quelle est votre expérience avec React et Node.js?',
       'Avez-vous déjà travaillé en méthodologie Agile?'
     ],
-    question_weights: [2, 1.5]
+    question_weights: [2, 1.5],
+    enable_salary_question: true,
+    enable_engage: true,
+    enable_recapInterview: false
   },
   {
     headers: {

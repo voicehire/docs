@@ -11,9 +11,11 @@
   "openapi": "/openapi.yaml",
   "api": {
     "baseUrl": "https://app.voicehire.io",
-    "auth": {
-      "method": "key",
-      "name": "X-API-Key"
+    "mdx": {
+      "auth": {
+        "method": "key",
+        "name": "X-API-Key"
+      }
     },
     "playground": {
       "mode": "show"

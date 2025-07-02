@@ -37,10 +37,6 @@ description: 'Récupère la liste des candidats d\'une campagne avec leur synth�
   - `pending` - En attente d'appel
 </ParamField>
 
-<ParamField query="min_score" type="number">
-  Score minimum pour filtrer les candidats (0-10)
-</ParamField>
-
 ## Réponse
 
 <ResponseExample>
@@ -162,7 +158,7 @@ description: 'Récupère la liste des candidats d\'une campagne avec leur synth�
 
 <CodeGroup>
 ```bash cURL
-curl -X GET "https://app.voicehire.io/api/v1/campaigns/abc123def456/candidates?sort=score_desc&min_score=7" \
+curl -X GET "https://app.voicehire.io/api/v1/campaigns/abc123def456/candidates?sort=score_desc" \
   -H "X-API-Key: vh_live_XXXXXXXXXXXXX"
 ```
 
@@ -175,8 +171,7 @@ response = requests.get(
         "X-API-Key": "vh_live_XXXXXXXXXXXXX"
     },
     params={
-        "sort": "score_desc",
-        "min_score": 7
+        "sort": "score_desc"
     }
 )
 ```
@@ -191,8 +186,7 @@ const response = await axios.get(
       'X-API-Key': 'vh_live_XXXXXXXXXXXXX'
     },
     params: {
-      sort: 'score_desc',
-      min_score: 7
+      sort: 'score_desc'
     }
   }
 );

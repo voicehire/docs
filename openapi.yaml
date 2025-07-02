@@ -145,6 +145,15 @@ components:
           type: boolean
           default: true
           description: Activer la question sur la disponibilité
+        enable_engage:
+          type: boolean
+          description: Active la présentation de votre structure par l'agent VoiceHire (optionnel, surcharge le réglage de l'agence)
+        enable_recapInterview:
+          type: boolean
+          description: Active l'explication du déroulé de l'entretien par l'agent VoiceHire (optionnel, surcharge le réglage de l'agence)
+        enable_recapJob:
+          type: boolean
+          description: Active la présentation du poste par l'agent VoiceHire (optionnel, surcharge le réglage de l'agence)
 
     Candidate:
       type: object
@@ -505,11 +514,6 @@ paths:
             type: string
             enum: [completed, voicemail, pending]
           description: Filtrer par statut d'entretien
-        - in: query
-          name: min_score
-          schema:
-            type: number
-          description: Score minimum
       responses:
         '200':
           description: Liste des candidats

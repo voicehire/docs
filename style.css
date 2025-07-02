@@ -1,6 +1,6 @@
 /* Custom CSS for VoiceHire Documentation */
 
-/* Triple the logo size */
+/* Increase logo size by 1.5x */
 #navbar img[alt="logo"], 
 #navbar svg,
 .logo img,
@@ -9,7 +9,7 @@ nav img[src*="logo"],
 nav svg[role="img"],
 header img[src*="logo"],
 header svg[role="img"] {
-  transform: scale(3);
+  transform: scale(1.5);
   transform-origin: left center;
 }
 
@@ -19,20 +19,20 @@ nav svg[role="img"],
 header img[src*="logo"],
 header svg[role="img"] {
   width: auto !important;
-  height: 120px !important; /* Triple the typical 40px height */
+  height: 60px !important; /* 1.5x the typical 40px height */
 }
 
 /* Adjust navbar padding to accommodate larger logo */
 #navbar {
-  padding-top: 2rem;
-  padding-bottom: 2rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 /* Ensure logo container has enough space */
 .logo-container,
 .navbar-logo,
 [class*="logo"] {
-  min-height: 120px;
+  min-height: 60px;
   display: flex;
   align-items: center;
 }

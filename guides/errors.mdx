@@ -68,6 +68,24 @@ L'API utilise les codes de statut HTTP standards :
 
 **Solution** : Vérifiez que votre clé API est correcte et active
 
+### Limites et quotas
+
+#### INSUFFICIENT_CREDITS
+```json
+{
+  "error": {
+    "code": "INSUFFICIENT_CREDITS",
+    "message": "Insufficient credits",
+    "details": {
+      "required": 50,
+      "available": 10
+    }
+  }
+}
+```
+
+**Solution** : Rechargez vos crédits ou passez à un plan supérieur
+
 ### Validation des données
 
 #### VALIDATION_ERROR
@@ -103,22 +121,6 @@ L'API utilise les codes de statut HTTP standards :
 **Solution** : Utilisez un numéro de téléphone français valide
 
 ### Limites et quotas
-
-#### INSUFFICIENT_CREDITS
-```json
-{
-  "error": {
-    "code": "INSUFFICIENT_CREDITS",
-    "message": "Insufficient credits",
-    "details": {
-      "required": 50,
-      "available": 10
-    }
-  }
-}
-```
-
-**Solution** : Rechargez vos crédits ou passez à un plan supérieur
 
 #### RATE_LIMIT_EXCEEDED
 ```json

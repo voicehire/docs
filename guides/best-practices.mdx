@@ -328,6 +328,16 @@ api_latency = prom.Histogram('voicehire_api_latency_seconds', 'API latency', ['e
 credits_remaining = prom.Gauge('voicehire_credits_remaining', 'Credits remaining')
 
 class MonitoredVoiceHireClient(VoiceHireClient):
+    async def check_credits(self):
+        """Vérifie les crédits et alerte si nécessaire"""
+        credits = await self.get_credits()
+        credits_remaining.set(credits['credits_available'])
+        
+        # Alerter si crédits faibles
+        if credits['credits_available'] < 50:
+            logging.critical(f"Low credits: {credits['credits_available']} remaining")
+            # Envoyer une notification (email, Slack, etc.)
+    
     async def request(self, method, endpoint, data=None):
         start_time = datetime.now()
         status = 'success'
@@ -348,15 +358,6 @@ class MonitoredVoiceHireClient(VoiceHireClient):
             if duration > 5:
                 logging.warning(f"Slow API call: {endpoint} took {duration:.2f}s")
 
-    async def check_credits(self):
-        """Vérifie les crédits et alerte si nécessaire"""
-        credits = await self.get_credits()
-        credits_remaining.set(credits['credits_available'])
-        
-        # Alerter si crédits faibles
-        if credits['credits_available'] < 50:
-            logging.critical(f"Low credits: {credits['credits_available']} remaining")
-            # Envoyer une notification (email, Slack, etc.)
 ```
 
 ## Sécurité

@@ -1,36 +1,64 @@
 ---
-title: 'Introduction API'
-description: 'Référence complète de l\'API REST VoiceHire'
+title: 'Introduction'
+description: 'Bienvenue dans la documentation de l\'API VoiceHire'
 ---
-
-# Référence API
-
-Bienvenue dans la documentation de référence de l'API VoiceHire. Cette section contient la documentation détaillée de tous les endpoints disponibles.
 
 ## Vue d'ensemble
 
-L'API VoiceHire est organisée autour de REST. Elle accepte des requêtes JSON, retourne des réponses JSON et utilise les codes de statut HTTP standard.
+L'API VoiceHire vous permet d'automatiser vos campagnes de recrutement vocal directement depuis vos outils existants. Créez des campagnes, ajoutez des candidats, et recevez les résultats d'entretiens en temps réel.
 
-### URL de base
+## Cas d'usage principaux
 
-```
-https://app.voicehire.io/api/v1
-```
+<CardGroup cols={2}>
+  <Card title="Automatisation ATS" icon="robot">
+    Intégrez VoiceHire à votre ATS pour automatiser le screening téléphonique
+  </Card>
+  <Card title="Volume élevé" icon="users">
+    Gérez des centaines de candidats simultanément avec notre API
+  </Card>
+  <Card title="Sourcing SMS" icon="mobile">
+    Sourcez des candidats et envoyez-leur des invitations par SMS
+  </Card>
+  <Card title="Webhooks" icon="webhook">
+    Recevez des notifications en temps réel sur vos systèmes
+  </Card>
+</CardGroup>
 
-### Authentification
+## Démarrage rapide
 
-Toutes les requêtes doivent inclure votre clé API dans l'en-tête `X-API-Key` :
+### 1. Obtenir votre clé API
+
+Connectez-vous à votre [tableau de bord VoiceHire](https://app.voicehire.io) et accédez à la section API pour générer votre clé.
+
+### 2. Authentification
+
+Incluez votre clé API dans l'en-tête de chaque requête:
 
 ```bash
-curl https://app.voicehire.io/api/v1/campaigns \
-  -H "X-API-Key: vh_live_VOTRE_CLE_API"
+X-API-Key: vh_live_XXXXXXXXXXXXX
 ```
+
+### 3. Première requête
+
+Testez votre intégration en récupérant vos crédits disponibles:
+
+```bash
+curl -X GET https://app.voicehire.io/api/v1/account/credits \
+  -H "X-API-Key: vh_live_XXXXXXXXXXXXX"
+```
+
+## Flux de travail typique
+
+1. **Créer une campagne** - Définissez le poste et les questions d'entretien
+2. **Ajouter des candidats** - Importez vos candidats (jusqu'à 100 par requête)
+3. **Suivre le statut** - Consultez l'avancement de votre campagne
+4. **Récupérer les résultats** - Obtenez les synthèses d'entretien et scores
 
 ## Endpoints disponibles
 
 L'API est organisée en trois sections principales :
 
-### 📋 Campagnes
+### Campagnes
 
 Gérez vos campagnes de recrutement :
 - Créer des campagnes avec génération automatique de questions
@@ -38,7 +66,7 @@ Gérez vos campagnes de recrutement :
 - Suivre le statut et les statistiques
 - Modifier le statut (active, en pause, terminée)
 
-### 👥 Candidats
+### Candidats
 
 Gérez les candidats de vos campagnes :
 - Ajouter des candidats (déclenche automatiquement les appels)
@@ -46,7 +74,7 @@ Gérez les candidats de vos campagnes :
 - Récupérer la liste des candidats avec filtres
 - Accéder aux détails complets incluant les transcriptions
 
-### 💳 Compte
+### Compte
 
 Gérez votre compte et vos crédits :
 - Consulter vos crédits disponibles

@@ -1,0 +1,102 @@
+---
+title: 'Lister les campagnes'
+api: 'GET /api/v1/campaigns'
+description: 'Récupère la liste de toutes les campagnes de votre agence avec pagination'
+---
+
+## Paramètres de requête
+
+<ParamField query="page" type="integer" default="1">
+  Numéro de la page à récupérer (minimum: 1)
+</ParamField>
+
+<ParamField query="per_page" type="integer" default="20">
+  Nombre de résultats par page (minimum: 1, maximum: 100)
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filtrer les campagnes par statut
+  
+  Valeurs possibles:
+  - `active` - Campagnes actives
+  - `paused` - Campagnes en pause
+  - `completed` - Campagnes terminées
+</ParamField>
+
+## Réponse
+
+<ResponseExample>
+```json
+{
+  "campaigns": [
+    {
+      "campaign_id": "abc123def456",
+      "job_title": "Développeur Full Stack",
+      "status": "active",
+      "total_candidates": 25,
+      "created_at": "2024-01-15T10:30:00Z"
+    },
+    {
+      "campaign_id": "ghi789jkl012",
+      "job_title": "Commercial B2B",
+      "status": "completed",
+      "total_candidates": 50,
+      "created_at": "2024-01-10T14:20:00Z"
+    }
+  ],
+  "total": 15,
+  "page": 1,
+  "per_page": 20,
+  "total_pages": 1
+}
+```
+</ResponseExample>
+
+<ResponseField name="campaigns" type="array">
+  Liste des campagnes
+  
+  <Expandable title="Propriétés">
+    <ResponseField name="campaign_id" type="string" required>
+      Identifiant unique de la campagne
+    </ResponseField>
+    
+    <ResponseField name="job_title" type="string" required>
+      Titre du poste pour cette campagne
+    </ResponseField>
+    
+    <ResponseField name="status" type="string" required>
+      Statut actuel de la campagne (`active`, `paused`, `completed`)
+    </ResponseField>
+    
+    <ResponseField name="total_candidates" type="integer" required>
+      Nombre total de candidats dans la campagne
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="string" required>
+      Date de création de la campagne (format ISO 8601)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="total" type="integer" required>
+  Nombre total de campagnes correspondant aux critères
+</ResponseField>
+
+<ResponseField name="page" type="integer" required>
+  Page actuelle
+</ResponseField>
+
+<ResponseField name="per_page" type="integer" required>
+  Nombre de résultats par page
+</ResponseField>
+
+<ResponseField name="total_pages" type="integer" required>
+  Nombre total de pages
+</ResponseField>
+
+## Codes d'erreur
+
+| Code | Description |
+|------|-------------|
+| 400 | Paramètres de requête invalides |
+| 401 | Clé API manquante ou invalide |

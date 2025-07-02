@@ -1,0 +1,403 @@
+---
+title: 'Webhooks'
+description: 'Recevez des notifications en temps réel sur les événements VoiceHire'
+---
+
+## Introduction
+
+Les webhooks VoiceHire vous permettent de recevoir des notifications HTTP en temps réel lorsque des événements se produisent dans votre compte. Cela vous évite d'avoir à interroger constamment l'API pour détecter les changements.
+
+## Configuration
+
+### 1. Accéder aux paramètres
+
+Connectez-vous à votre [tableau de bord VoiceHire](https://app.voicehire.io) et accédez à la section API, puis à l'onglet Webhooks.
+
+### 2. Configurer votre endpoint
+
+<ParamField body="URL du webhook" type="string" required>
+  L'URL HTTPS où VoiceHire enverra les notifications
+</ParamField>
+
+<ParamField body="Secret partagé" type="string">
+  Clé secrète optionnelle pour signer les payloads (recommandé)
+</ParamField>
+
+<ParamField body="Événements" type="array" required>
+  Sélectionnez les événements que vous souhaitez recevoir
+</ParamField>
+
+### 3. Tester la configuration
+
+Utilisez le bouton "Tester" pour envoyer un événement de test à votre endpoint.
+
+## Format des webhooks
+
+Tous les webhooks suivent le même format JSON :
+
+```json
+{
+  "event": "campaign.created",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    // Données spécifiques à l'événement
+  }
+}
+```
+
+### Headers HTTP
+
+```http
+POST /votre-endpoint HTTP/1.1
+Content-Type: application/json
+X-VoiceHire-Event: campaign.created
+X-VoiceHire-Signature: sha256=abc123... (si secret configuré)
+```
+
+## Vérification de la signature
+
+Si vous avez configuré un secret partagé, VoiceHire signe chaque webhook avec HMAC-SHA256 :
+
+<CodeGroup>
+```python Python
+import hmac
+import hashlib
+
+def verify_webhook(request):
+    signature = request.headers.get('X-VoiceHire-Signature')
+    if not signature:
+        return False
+    
+    # Extraire la signature (format: sha256=...)
+    expected_sig = signature.split('=')[1]
+    
+    # Calculer la signature
+    payload = request.body
+    secret = 'votre_secret_partage'
+    calculated_sig = hmac.new(
+        secret.encode('utf-8'),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(expected_sig, calculated_sig)
+```
+
+```javascript Node.js
+const crypto = require('crypto');
+
+function verifyWebhook(request) {
+  const signature = request.headers['x-voicehire-signature'];
+  if (!signature) return false;
+  
+  // Extraire la signature (format: sha256=...)
+  const expectedSig = signature.split('=')[1];
+  
+  // Calculer la signature
+  const payload = JSON.stringify(request.body);
+  const secret = 'votre_secret_partage';
+  const calculatedSig = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+  
+  return expectedSig === calculatedSig;
+}
+```
+
+```php PHP
+function verifyWebhook($headers, $payload, $secret) {
+    if (!isset($headers['X-VoiceHire-Signature'])) {
+        return false;
+    }
+    
+    // Extraire la signature (format: sha256=...)
+    $signature = explode('=', $headers['X-VoiceHire-Signature'])[1];
+    
+    // Calculer la signature
+    $calculatedSig = hash_hmac('sha256', $payload, $secret);
+    
+    return hash_equals($signature, $calculatedSig);
+}
+```
+</CodeGroup>
+
+## Événements disponibles
+
+### Campagnes
+
+#### campaign.created
+Déclenché lors de la création d'une nouvelle campagne.
+
+```json
+{
+  "event": "campaign.created",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "campaign_id": "abc123def456",
+    "job_title": "Développeur Full Stack",
+    "questions_count": 6,
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+#### campaign.status_changed
+Déclenché lorsque le statut d'une campagne change.
+
+```json
+{
+  "event": "campaign.status_changed",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "campaign_id": "abc123def456",
+    "old_status": "active",
+    "new_status": "paused",
+    "changed_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+### Candidats
+
+#### candidate.added
+Déclenché lorsqu'un candidat est ajouté à une campagne.
+
+```json
+{
+  "event": "candidate.added",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "campaign_id": "abc123def456",
+    "candidate_id": "550e8400-e29b-41d4-a716-446655440000",
+    "first_name": "Jean",
+    "last_name": "Dupont",
+    "call_scheduled": true
+  }
+}
+```
+
+#### candidate.sourced
+Déclenché lorsqu'un candidat est sourcé via SMS.
+
+```json
+{
+  "event": "candidate.sourced",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "campaign_id": "abc123def456",
+    "candidate_id": "550e8400-e29b-41d4-a716-446655440000",
+    "first_name": "Marie",
+    "last_name": "Martin",
+    "sms_sent": true
+  }
+}
+```
+
+### Entretiens
+
+#### candidate.interview.started
+Déclenché lorsqu'un entretien téléphonique commence.
+
+```json
+{
+  "event": "candidate.interview.started",
+  "timestamp": "2024-01-15T14:30:00Z",
+  "data": {
+    "campaign_id": "abc123def456",
+    "candidate_id": "550e8400-e29b-41d4-a716-446655440000",
+    "first_name": "Jean",
+    "last_name": "Dupont"
+  }
+}
+```
+
+#### candidate.interview.completed
+Déclenché lorsqu'un entretien est terminé avec succès.
+
+```json
+{
+  "event": "candidate.interview.completed",
+  "timestamp": "2024-01-15T14:45:00Z",
+  "data": {
+    "campaign_id": "abc123def456",
+    "candidate_id": "550e8400-e29b-41d4-a716-446655440000",
+    "first_name": "Jean",
+    "last_name": "Dupont",
+    "email": "jean.dupont@example.com",
+    "phone": "0612345678",
+    "score": 8.5,
+    "duration_seconds": 480,
+    "availability_start": "2024-02-01",
+    "candidate_alignment": "Excellente correspondance",
+    "strengths": ["Expérience React", "Communication"],
+    "concerns": ["Peu d'expérience en gestion"]
+  }
+}
+```
+
+#### candidate.interview.completed.extended
+Version étendue avec les réponses détaillées (optionnel).
+
+```json
+{
+  "event": "candidate.interview.completed.extended",
+  "timestamp": "2024-01-15T14:45:00Z",
+  "data": {
+    // Toutes les données de candidate.interview.completed plus :
+    "responses": [
+      {
+        "question": "Quelle est votre expérience avec React?",
+        "answer": "J'ai 5 ans d'expérience...",
+        "score": 9,
+        "explanation": "Expertise approfondie démontrée"
+      }
+    ]
+  }
+}
+```
+
+#### candidate.interview.failed
+Déclenché lorsqu'un entretien échoue ou est incomplet.
+
+```json
+{
+  "event": "candidate.interview.failed",
+  "timestamp": "2024-01-15T14:35:00Z",
+  "data": {
+    "campaign_id": "abc123def456",
+    "candidate_id": "550e8400-e29b-41d4-a716-446655440000",
+    "first_name": "Pierre",
+    "last_name": "Durand",
+    "reason": "voicemail"
+  }
+}
+```
+
+### Crédits
+
+#### credits.low
+Déclenché lorsque vos crédits passent sous le seuil de 20%.
+
+```json
+{
+  "event": "credits.low",
+  "timestamp": "2024-01-15T10:00:00Z",
+  "data": {
+    "credits_remaining": 45,
+    "percentage_remaining": 18
+  }
+}
+```
+
+#### credits.depleted
+Déclenché lorsque vos crédits sont épuisés.
+
+```json
+{
+  "event": "credits.depleted",
+  "timestamp": "2024-01-15T15:00:00Z",
+  "data": {
+    "credits_remaining": 0
+  }
+}
+```
+
+## Bonnes pratiques
+
+### 1. Répondre rapidement
+
+Votre endpoint doit répondre avec un code 2xx dans les 5 secondes. Pour les traitements longs, répondez immédiatement et traitez en arrière-plan.
+
+### 2. Idempotence
+
+VoiceHire peut renvoyer le même webhook en cas d'échec. Utilisez l'ID unique de l'événement pour éviter les doublons.
+
+### 3. Ordre des événements
+
+Les webhooks peuvent arriver dans le désordre. Utilisez les timestamps pour reconstituer la chronologie.
+
+### 4. Gestion des erreurs
+
+Si votre endpoint retourne une erreur (4xx ou 5xx), VoiceHire retentera 3 fois avec un délai exponentiel.
+
+### 5. Surveillance
+
+Surveillez vos webhooks depuis le tableau de bord pour détecter les échecs de livraison.
+
+## Exemple d'implémentation
+
+<CodeGroup>
+```python Flask
+from flask import Flask, request, jsonify
+import hmac
+import hashlib
+
+app = Flask(__name__)
+WEBHOOK_SECRET = 'votre_secret_partage'
+
+@app.route('/webhook/voicehire', methods=['POST'])
+def handle_webhook():
+    # Vérifier la signature
+    signature = request.headers.get('X-VoiceHire-Signature')
+    if signature and WEBHOOK_SECRET:
+        expected = 'sha256=' + hmac.new(
+            WEBHOOK_SECRET.encode(),
+            request.data,
+            hashlib.sha256
+        ).hexdigest()
+        
+        if signature != expected:
+            return jsonify({'error': 'Invalid signature'}), 401
+    
+    # Traiter l'événement
+    event_data = request.json
+    event_type = event_data['event']
+    
+    if event_type == 'candidate.interview.completed':
+        # Traiter l'entretien terminé
+        candidate = event_data['data']
+        print(f"Interview completed for {candidate['first_name']} {candidate['last_name']}")
+        print(f"Score: {candidate['score']}")
+    
+    # Répondre rapidement
+    return jsonify({'status': 'received'}), 200
+```
+
+```javascript Express
+const express = require('express');
+const crypto = require('crypto');
+
+const app = express();
+app.use(express.json());
+
+const WEBHOOK_SECRET = 'votre_secret_partage';
+
+app.post('/webhook/voicehire', (req, res) => {
+  // Vérifier la signature
+  const signature = req.headers['x-voicehire-signature'];
+  if (signature && WEBHOOK_SECRET) {
+    const expected = 'sha256=' + crypto
+      .createHmac('sha256', WEBHOOK_SECRET)
+      .update(JSON.stringify(req.body))
+      .digest('hex');
+    
+    if (signature !== expected) {
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+  }
+  
+  // Traiter l'événement
+  const { event, data } = req.body;
+  
+  if (event === 'candidate.interview.completed') {
+    // Traiter l'entretien terminé
+    console.log(`Interview completed for ${data.first_name} ${data.last_name}`);
+    console.log(`Score: ${data.score}`);
+  }
+  
+  // Répondre rapidement
+  res.json({ status: 'received' });
+});
+```
+</CodeGroup>

@@ -1,0 +1,207 @@
+---
+title: 'Limites de taux'
+description: 'Comprendre et gérer les limites de l\'API VoiceHire'
+---
+
+## Vue d'ensemble
+
+L'API VoiceHire implémente des limites de taux pour garantir des performances optimales et une utilisation équitable pour tous les utilisateurs.
+
+## Limites actuelles
+
+### Limites par endpoint
+
+| Endpoint | Limite | Fenêtre |
+|----------|--------|---------|
+| Tous les endpoints | 10 requêtes | Par seconde |
+| Création de campagne | 20 requêtes | Par heure |
+| Ajout de candidats | 100 requêtes | Par heure |
+| Récupération de données | 1000 requêtes | Par heure |
+
+### Limites globales
+
+- **60 requêtes par minute** sur l'ensemble de l'API
+- **1000 requêtes par heure** toutes ressources confondues
+
+## Headers de réponse
+
+Chaque réponse de l'API inclut des headers informatifs :
+
+```http
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 45
+X-RateLimit-Reset: 1673890800
+```
+
+- `X-RateLimit-Limit` : Nombre maximum de requêtes autorisées
+- `X-RateLimit-Remaining` : Nombre de requêtes restantes
+- `X-RateLimit-Reset` : Timestamp Unix de la prochaine réinitialisation
+
+## Gestion des limites
+
+### Réponse 429
+
+Lorsque vous dépassez une limite, l'API retourne une erreur 429 :
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Limite de taux dépassée. Réessayez dans 30 secondes.",
+    "details": {
+      "retry_after": 30
+    }
+  }
+}
+```
+
+### Header Retry-After
+
+La réponse inclut également un header `Retry-After` indiquant le nombre de secondes à attendre :
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 30
+```
+
+## Bonnes pratiques
+
+### 1. Mise en cache
+
+Mettez en cache les réponses qui changent peu fréquemment :
+
+```javascript
+const cache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+async function getCampaignStatus(campaignId) {
+  const cacheKey = `campaign:${campaignId}`;
+  const cached = cache.get(cacheKey);
+  
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  
+  const response = await fetch(`/api/v1/campaigns/${campaignId}/status`);
+  const data = await response.json();
+  
+  cache.set(cacheKey, {
+    data,
+    timestamp: Date.now()
+  });
+  
+  return data;
+}
+```
+
+### 2. Regroupement de requêtes
+
+Regroupez plusieurs opérations en une seule requête :
+
+```python
+# ❌ Évitez
+for candidate in candidates:
+    api.add_candidate(campaign_id, candidate)
+
+# ✅ Préférez
+api.add_candidates(campaign_id, candidates)  # Jusqu'à 100 à la fois
+```
+
+### 3. Retry avec backoff exponentiel
+
+Implémentez une stratégie de retry intelligente :
+
+```python
+import time
+import requests
+
+def make_request_with_retry(url, headers, max_retries=3):
+    for attempt in range(max_retries):
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 429:
+            retry_after = int(response.headers.get('Retry-After', 2 ** attempt))
+            print(f"Rate limited. Waiting {retry_after} seconds...")
+            time.sleep(retry_after)
+            continue
+            
+        return response
+    
+    raise Exception("Max retries exceeded")
+```
+
+### 4. Surveillance des limites
+
+Surveillez vos limites restantes :
+
+```javascript
+async function makeApiCall(endpoint) {
+  const response = await fetch(endpoint, {
+    headers: { 'X-API-Key': API_KEY }
+  });
+  
+  const remaining = response.headers.get('X-RateLimit-Remaining');
+  if (remaining < 10) {
+    console.warn(`Attention: seulement ${remaining} requêtes restantes`);
+  }
+  
+  return response.json();
+}
+```
+
+## Optimisations recommandées
+
+### Utilisation des webhooks
+
+Au lieu de faire du polling :
+
+```javascript
+// ❌ Évitez le polling
+setInterval(async () => {
+  const status = await checkCampaignStatus(campaignId);
+  // ...
+}, 5000);
+
+// ✅ Utilisez les webhooks
+// Configurez un webhook pour recevoir les mises à jour
+```
+
+### Pagination efficace
+
+Récupérez uniquement les données nécessaires :
+
+```python
+# Utilisez per_page pour contrôler la taille
+response = api.get_candidates(
+    campaign_id=campaign_id,
+    per_page=100,  # Maximum autorisé
+    page=1
+)
+
+# Parcourez les pages uniquement si nécessaire
+while response['pagination']['page'] < response['pagination']['total_pages']:
+    # Traiter les candidats
+    # ...
+```
+
+### Filtres et tri
+
+Utilisez les paramètres de requête pour réduire les données :
+
+```bash
+# Au lieu de récupérer tous les candidats
+GET /api/v1/campaigns/{id}/candidates
+
+# Filtrez directement
+GET /api/v1/campaigns/{id}/candidates?filter_status=completed&min_score=7
+```
+
+## Augmentation des limites
+
+Pour des besoins spécifiques nécessitant des limites plus élevées :
+
+1. Contactez support@voicehire.io
+2. Décrivez votre cas d'usage
+3. Fournissez des estimations de volume
+
+Les plans Enterprise peuvent bénéficier de limites personnalisées.

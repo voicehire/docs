@@ -1,0 +1,214 @@
+---
+title: 'Obtenir les détails d\'un candidat'
+api: 'GET /api/v1/candidates/{candidate_id}'
+description: 'Récupère les informations complètes d\'un candidat incluant ses réponses d\'entretien'
+---
+
+## Paramètres
+
+<ParamField path="candidate_id" type="string" required>
+  Identifiant unique du candidat (UUID)
+</ParamField>
+
+## Réponse
+
+<ResponseExample>
+```json
+{
+  "candidate_id": "550e8400-e29b-41d4-a716-446655440000",
+  "campaign_id": "abc123def456",
+  "basic_info": {
+    "first_name": "Jean",
+    "last_name": "Dupont",
+    "email": "jean.dupont@example.com",
+    "phone": "0612345678"
+  },
+  "interview": {
+    "status": "completed",
+    "date": "2024-01-15T14:30:00Z",
+    "duration_seconds": 480,
+    "score": 8.5
+  },
+  "responses": [
+    {
+      "question": "Parlez-moi de votre expérience avec React et Node.js",
+      "answer": "J'ai 5 ans d'expérience avec React, j'ai travaillé sur plusieurs projets...",
+      "score": 9,
+      "weight": 2,
+      "explanation": "Le candidat démontre une expertise approfondie avec des exemples concrets"
+    },
+    {
+      "question": "Quelle est votre disponibilité?",
+      "answer": "Je suis disponible immédiatement",
+      "score": 10,
+      "weight": 1,
+      "explanation": "Disponibilité immédiate, alignée avec les besoins"
+    }
+  ],
+  "analysis": {
+    "availability": "Immédiatement",
+    "availability_start": "2024-01-20",
+    "salary_expectation": "45000-50000€",
+    "candidate_alignment": "Excellente correspondance avec le profil recherché. Expertise technique solide et disponibilité immédiate.",
+    "strengths": [
+      "5 ans d'expérience avec React et Node.js",
+      "Portfolio de projets impressionnant",
+      "Excellentes compétences en communication",
+      "Disponible immédiatement"
+    ],
+    "concerns": [
+      "Peu d'expérience en gestion d'équipe",
+      "Prétentions salariales dans la fourchette haute"
+    ]
+  }
+}
+```
+</ResponseExample>
+
+<ResponseField name="candidate_id" type="string" required>
+  Identifiant unique du candidat
+</ResponseField>
+
+<ResponseField name="campaign_id" type="string" required>
+  Identifiant de la campagne associée
+</ResponseField>
+
+<ResponseField name="basic_info" type="object" required>
+  Informations de base du candidat
+  
+  <Expandable title="Propriétés">
+    <ResponseField name="first_name" type="string" required>
+      Prénom
+    </ResponseField>
+    
+    <ResponseField name="last_name" type="string" required>
+      Nom de famille
+    </ResponseField>
+    
+    <ResponseField name="email" type="string" required>
+      Adresse email
+    </ResponseField>
+    
+    <ResponseField name="phone" type="string" required>
+      Numéro de téléphone
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="interview" type="object" required>
+  Détails de l'entretien
+  
+  <Expandable title="Propriétés">
+    <ResponseField name="status" type="string" required>
+      Statut de l'entretien (`completed`, `voicemail`, `incomplete`, `pending`)
+    </ResponseField>
+    
+    <ResponseField name="date" type="string">
+      Date de l'entretien (ISO 8601)
+    </ResponseField>
+    
+    <ResponseField name="duration_seconds" type="integer">
+      Durée de l'entretien en secondes
+    </ResponseField>
+    
+    <ResponseField name="score" type="number">
+      Score global de l'entretien (0-10)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="responses" type="array">
+  Réponses détaillées aux questions (uniquement si l'entretien est complété)
+  
+  <Expandable title="Propriétés de chaque réponse">
+    <ResponseField name="question" type="string" required>
+      Question posée
+    </ResponseField>
+    
+    <ResponseField name="answer" type="string" required>
+      Réponse du candidat (transcription)
+    </ResponseField>
+    
+    <ResponseField name="score" type="number" required>
+      Score attribué à cette réponse (0-10)
+    </ResponseField>
+    
+    <ResponseField name="weight" type="number" required>
+      Poids de la question dans le calcul final
+    </ResponseField>
+    
+    <ResponseField name="explanation" type="string" required>
+      Analyse de la réponse par l'IA
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="analysis" type="object">
+  Analyse globale du candidat (uniquement si l'entretien est complété)
+  
+  <Expandable title="Propriétés">
+    <ResponseField name="availability" type="string">
+      Disponibilité exprimée par le candidat
+    </ResponseField>
+    
+    <ResponseField name="availability_start" type="string">
+      Date de disponibilité normalisée (format YYYY-MM-DD)
+    </ResponseField>
+    
+    <ResponseField name="salary_expectation" type="string">
+      Prétentions salariales
+    </ResponseField>
+    
+    <ResponseField name="candidate_alignment" type="string">
+      Analyse de l'alignement avec le poste
+    </ResponseField>
+    
+    <ResponseField name="strengths" type="array">
+      Liste des points forts identifiés
+    </ResponseField>
+    
+    <ResponseField name="concerns" type="array">
+      Liste des points d'attention
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Exemple de requête
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://app.voicehire.io/api/v1/candidates/550e8400-e29b-41d4-a716-446655440000 \
+  -H "X-API-Key: vh_live_XXXXXXXXXXXXX"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://app.voicehire.io/api/v1/candidates/550e8400-e29b-41d4-a716-446655440000",
+    headers={
+        "X-API-Key": "vh_live_XXXXXXXXXXXXX"
+    }
+)
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.get(
+  'https://app.voicehire.io/api/v1/candidates/550e8400-e29b-41d4-a716-446655440000',
+  {
+    headers: {
+      'X-API-Key': 'vh_live_XXXXXXXXXXXXX'
+    }
+  }
+);
+```
+</CodeGroup>
+
+## Codes d'erreur
+
+| Code | Description |
+|------|-------------|
+| 401 | Clé API manquante ou invalide |
+| 404 | Candidat non trouvé |

@@ -8,7 +8,7 @@
     "dark": "#4338CA"
   },
   "favicon": "/favicon.svg",
-  "openapi": "openapi.yaml",
+  "openapi": "/openapi.yaml",
   "api": {
     "baseUrl": "https://app.voicehire.io",
     "auth": {
@@ -16,7 +16,7 @@
       "name": "X-API-Key"
     },
     "playground": {
-      "display": "interactive"
+      "mode": "show"
     }
   },
   "navigation": {
@@ -37,7 +37,8 @@
             "pages": [
               "guides/webhooks",
               "guides/rate-limits",
-              "guides/errors"
+              "guides/errors",
+              "guides/best-practices"
             ]
           }
         ]
@@ -101,6 +102,18 @@
   "logo": {
     "light": "/logo/dark.png",
     "dark": "/logo/light.png"
+  },
+  "integrations": {
+    "intercom": "YOUR_INTERCOM_APP_ID"
+  },
+  "analytics": {
+    "ga4": {
+      "measurementId": "G-XXXXXXXXXX"
+    }
+  },
+  "feedback": {
+    "thumbsRating": true,
+    "suggestEdit": true
   },
   "navbar": {
     "links": [

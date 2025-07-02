@@ -1,0 +1,165 @@
+---
+title: 'Créer une campagne'
+api: 'POST /api/v1/campaigns/create'
+description: 'Crée une nouvelle campagne de recrutement avec génération automatique ou personnalisation des questions'
+---
+
+## Corps de la requête
+
+<ParamField body="job_title" type="string" required>
+  Titre du poste à pourvoir
+</ParamField>
+
+<ParamField body="contract_type" type="string" required>
+  Type de contrat proposé
+  
+  Valeurs possibles:
+  - `CDI` - Contrat à durée indéterminée
+  - `CDD` - Contrat à durée déterminée
+  - `Stage` - Convention de stage
+  - `Alternance` - Contrat d'alternance
+  - `Freelance` - Mission freelance
+  - `Interim` - Mission d'intérim
+</ParamField>
+
+<ParamField body="job_description" type="string" required>
+  Description détaillée du poste, des responsabilités et du profil recherché
+</ParamField>
+
+<ParamField body="additional_info" type="string">
+  Informations complémentaires sur le poste ou l'entreprise
+</ParamField>
+
+<ParamField body="client_name" type="string">
+  Nom de l'entreprise cliente (sera utilisé lors des appels)
+</ParamField>
+
+<ParamField body="questions" type="array">
+  Questions personnalisées pour l'entretien (maximum 8)
+  
+  Si non fourni, 6 questions seront générées automatiquement par IA
+</ParamField>
+
+<ParamField body="question_weights" type="array">
+  Poids associés à chaque question (requis si des questions sont fournies)
+  
+  Valeurs possibles pour chaque poids: `0`, `0.5`, `1`, `1.5`, `2`
+</ParamField>
+
+<ParamField body="enable_salary_question" type="boolean" default="true">
+  Activer la question sur les prétentions salariales
+</ParamField>
+
+<ParamField body="enable_job_search_question" type="boolean" default="true">
+  Activer la question sur la recherche d'emploi actuelle
+</ParamField>
+
+<ParamField body="enable_availability_question" type="boolean" default="true">
+  Activer la question sur la disponibilité
+</ParamField>
+
+## Réponse
+
+<ResponseExample>
+```json
+{
+  "campaign_id": "abc123def456",
+  "candidate_link": "https://app.voicehire.io/link/abc123def456",
+  "status": "active",
+  "questions_generated": 6
+}
+```
+</ResponseExample>
+
+<ResponseField name="campaign_id" type="string" required>
+  Identifiant unique de la campagne créée
+</ResponseField>
+
+<ResponseField name="candidate_link" type="string" required>
+  Lien à partager avec les candidats pour postuler
+</ResponseField>
+
+<ResponseField name="status" type="string" required>
+  Statut de la campagne (toujours `active` à la création)
+</ResponseField>
+
+<ResponseField name="questions_generated" type="integer" required>
+  Nombre de questions générées pour l'entretien
+</ResponseField>
+
+## Exemple de requête
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://app.voicehire.io/api/v1/campaigns/create \
+  -H "X-API-Key: vh_live_XXXXXXXXXXXXX" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "job_title": "Développeur Full Stack",
+    "contract_type": "CDI",
+    "job_description": "Nous recherchons un développeur Full Stack expérimenté...",
+    "client_name": "TechCorp",
+    "questions": [
+      "Quelle est votre expérience avec React et Node.js?",
+      "Avez-vous déjà travaillé en méthodologie Agile?"
+    ],
+    "question_weights": [2, 1.5]
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://app.voicehire.io/api/v1/campaigns/create",
+    headers={
+        "X-API-Key": "vh_live_XXXXXXXXXXXXX",
+        "Content-Type": "application/json"
+    },
+    json={
+        "job_title": "Développeur Full Stack",
+        "contract_type": "CDI",
+        "job_description": "Nous recherchons un développeur Full Stack expérimenté...",
+        "client_name": "TechCorp",
+        "questions": [
+            "Quelle est votre expérience avec React et Node.js?",
+            "Avez-vous déjà travaillé en méthodologie Agile?"
+        ],
+        "question_weights": [2, 1.5]
+    }
+)
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.post(
+  'https://app.voicehire.io/api/v1/campaigns/create',
+  {
+    job_title: 'Développeur Full Stack',
+    contract_type: 'CDI',
+    job_description: 'Nous recherchons un développeur Full Stack expérimenté...',
+    client_name: 'TechCorp',
+    questions: [
+      'Quelle est votre expérience avec React et Node.js?',
+      'Avez-vous déjà travaillé en méthodologie Agile?'
+    ],
+    question_weights: [2, 1.5]
+  },
+  {
+    headers: {
+      'X-API-Key': 'vh_live_XXXXXXXXXXXXX',
+      'Content-Type': 'application/json'
+    }
+  }
+);
+```
+</CodeGroup>
+
+## Codes d'erreur
+
+| Code | Description |
+|------|-------------|
+| 400 | Données invalides (champs requis manquants, format incorrect) |
+| 401 | Clé API manquante ou invalide |
+| 402 | Crédits insuffisants pour créer une campagne |

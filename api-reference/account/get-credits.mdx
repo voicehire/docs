@@ -1,0 +1,95 @@
+---
+title: 'Obtenir les informations de crédits'
+api: 'GET /api/v1/account/credits'
+description: 'Récupère le solde de crédits et les informations d\'abonnement de votre compte'
+---
+
+## Réponse
+
+<ResponseExample>
+```json
+{
+  "credits_available": 245.5,
+  "credits_used_this_month": 154,
+  "subscription_type": "Pro",
+  "reset_date": "2024-02-01"
+}
+```
+</ResponseExample>
+
+<ResponseField name="credits_available" type="number" required>
+  Nombre de crédits disponibles sur le compte
+</ResponseField>
+
+<ResponseField name="credits_used_this_month" type="integer" required>
+  Nombre de crédits utilisés pendant la période en cours
+</ResponseField>
+
+<ResponseField name="subscription_type" type="string" required>
+  Type d'abonnement actuel
+  
+  Types possibles:
+  - `Free` - Plan gratuit
+  - `Starter` - Plan Starter
+  - `Pro` - Plan Pro
+  - `Enterprise` - Plan Enterprise
+  - `Pay-as-you-go` - Paiement à l'usage
+</ResponseField>
+
+<ResponseField name="reset_date" type="string" required>
+  Date de réinitialisation des crédits mensuels (format YYYY-MM-DD)
+</ResponseField>
+
+## Exemple de requête
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://app.voicehire.io/api/v1/account/credits \
+  -H "X-API-Key: vh_live_XXXXXXXXXXXXX"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://app.voicehire.io/api/v1/account/credits",
+    headers={
+        "X-API-Key": "vh_live_XXXXXXXXXXXXX"
+    }
+)
+
+if response.status_code == 200:
+    data = response.json()
+    print(f"Crédits disponibles: {data['credits_available']}")
+    print(f"Abonnement: {data['subscription_type']}")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.get(
+  'https://app.voicehire.io/api/v1/account/credits',
+  {
+    headers: {
+      'X-API-Key': 'vh_live_XXXXXXXXXXXXX'
+    }
+  }
+);
+
+console.log(`Crédits disponibles: ${response.data.credits_available}`);
+console.log(`Abonnement: ${response.data.subscription_type}`);
+```
+</CodeGroup>
+
+## Notes importantes
+
+- Les crédits sont consommés pour chaque candidat ajouté ou SMS envoyé
+- Les crédits mensuels sont réinitialisés à la date indiquée
+- Les crédits non utilisés ne sont pas reportés au mois suivant
+- Pour les plans Pay-as-you-go, la date de réinitialisation n'est pas applicable
+
+## Codes d'erreur
+
+| Code | Description |
+|------|-------------|
+| 401 | Clé API manquante ou invalide |

@@ -30,7 +30,7 @@ info:
     
     - Les numéros de téléphone doivent être des numéros français (06 ou 07)
     - Maximum 100 candidats par requête d'ajout
-    - Les campagnes génèrent automatiquement 6 questions d'entretien
+    - Les campagnes peuvent avoir jusqu'à 8 questions personnalisées
     
   version: 1.0.0
   contact:
@@ -53,32 +53,26 @@ components:
       type: apiKey
       in: header
       name: X-API-Key
-      description: Clé API au format vh_live_XXXXX
+      description: Clé API VoiceHire (format vh_live_...)
 
   schemas:
     Error:
       type: object
-      required:
-        - error
       properties:
         error:
           type: object
-          required:
-            - code
-            - message
           properties:
             code:
               type: string
-              description: Code d'erreur machine-readable
-              example: MISSING_API_KEY
+              description: Code d'erreur unique
             message:
               type: string
-              description: Message d'erreur human-readable
-              example: API key is required
+              description: Message d'erreur lisible
             details:
               type: object
               description: Détails supplémentaires sur l'erreur
-              additionalProperties: true
+      required:
+        - error
 
     Campaign:
       type: object
@@ -86,34 +80,24 @@ components:
         campaign_id:
           type: string
           description: Identifiant unique de la campagne
-          example: CAMP-20250701-ABC123
+          example: "abc123def456"
         job_title:
           type: string
           description: Titre du poste
-          example: Développeur Full Stack
-        client_name:
-          type: string
-          description: Nom de l'entreprise cliente
-          example: TechCorp SAS
+          example: "Développeur Full Stack"
         status:
           type: string
           enum: [active, paused, completed]
           description: Statut de la campagne
+        total_candidates:
+          type: integer
+          description: Nombre total de candidats
         created_at:
           type: string
           format: date-time
           description: Date de création
-        candidate_count:
-          type: integer
-          description: Nombre de candidats
-          example: 25
-        candidate_link:
-          type: string
-          format: uri
-          description: Lien pour les candidats
-          example: https://app.voicehire.io/postuler/CAMP-20250701-ABC123
 
-    CampaignCreateRequest:
+    CampaignCreate:
       type: object
       required:
         - job_title
@@ -123,177 +107,137 @@ components:
         job_title:
           type: string
           description: Titre du poste
-          example: Développeur Full Stack Node.js/React
+          example: "Développeur Full Stack"
         contract_type:
           type: string
           enum: [CDI, CDD, Stage, Alternance, Freelance, Interim]
           description: Type de contrat
-          example: CDI
         job_description:
           type: string
           description: Description détaillée du poste
-          example: |
-            Nous recherchons un développeur Full Stack passionné...
         additional_info:
           type: string
-          description: Informations complémentaires
-          example: Stack technique: Node.js, React, PostgreSQL
+          description: Informations complémentaires (optionnel)
         client_name:
           type: string
-          description: Nom de l'entreprise cliente (optionnel, utilise le nom de l'agence par défaut)
-          example: TechCorp SAS
+          description: Nom de l'entreprise cliente (optionnel)
+        questions:
+          type: array
+          items:
+            type: string
+          description: Questions personnalisées (optionnel, max 8)
+          example: ["Quelle est votre expérience avec React?", "Êtes-vous disponible pour du télétravail?"]
+        question_weights:
+          type: array
+          items:
+            type: number
+            enum: [0, 0.5, 1, 1.5, 2]
+          description: Poids des questions (requis si questions fournies)
         enable_salary_question:
           type: boolean
-          description: Activer la question sur les prétentions salariales
           default: true
-        language:
-          type: string
-          description: Langue des questions (fr par défaut)
-          default: fr
-          example: fr
+          description: Activer la question sur le salaire
+        enable_job_search_question:
+          type: boolean
+          default: true
+          description: Activer la question sur la recherche d'emploi
+        enable_availability_question:
+          type: boolean
+          default: true
+          description: Activer la question sur la disponibilité
 
-    CampaignCreateResponse:
-      type: object
-      properties:
-        campaign_id:
-          type: string
-          description: Identifiant de la campagne créée
-          example: CAMP-20250701-ABC123
-        candidate_link:
-          type: string
-          format: uri
-          description: Lien à partager avec les candidats
-          example: https://app.voicehire.io/postuler/CAMP-20250701-ABC123
-        status:
-          type: string
-          description: Statut initial de la campagne
-          example: active
-        questions_generated:
-          type: integer
-          description: Nombre de questions générées
-          example: 6
-        questions_source:
-          type: string
-          enum: [ai, default]
-          description: Source des questions (IA ou défaut)
-          example: ai
-
-    CandidateAddRequest:
+    Candidate:
       type: object
       required:
-        - candidates
+        - first_name
+        - last_name
+        - phone
+        - email
       properties:
-        candidates:
-          type: array
-          minItems: 1
-          maxItems: 100
-          items:
-            type: object
-            required:
-              - first_name
-              - last_name
-              - phone_number
-            properties:
-              first_name:
-                type: string
-                description: Prénom du candidat
-                example: Jean
-              last_name:
-                type: string
-                description: Nom du candidat
-                example: Dupont
-              phone_number:
-                type: string
-                description: Numéro de téléphone (format français)
-                example: +33612345678
-              email:
-                type: string
-                format: email
-                description: Email du candidat (optionnel)
-                example: jean.dupont@example.com
-
-    CandidateSummary:
-      type: object
-      properties:
-        id:
-          type: integer
-          description: ID du candidat
-        uuid:
-          type: string
-          description: UUID du candidat
         first_name:
           type: string
+          example: "Jean"
         last_name:
           type: string
-        phone_number:
+          example: "Dupont"
+        phone:
           type: string
+          description: Numéro de téléphone français
+          example: "0612345678"
         email:
           type: string
-          nullable: true
-        status:
-          type: string
-          enum: [completed, pending, voicemail, incomplete]
-        interview_score:
-          type: number
-          nullable: true
-          description: Score de l'entretien (sur 10)
-        date:
-          type: string
-          format: date-time
-        is_sourced:
-          type: boolean
-          description: Candidat sourcé (avec SMS)
+          format: email
+          example: "jean.dupont@example.com"
 
     CandidateDetails:
-      allOf:
-        - $ref: '#/components/schemas/CandidateSummary'
-        - type: object
+      type: object
+      properties:
+        candidate_id:
+          type: string
+          format: uuid
+        campaign_id:
+          type: string
+        basic_info:
+          type: object
           properties:
-            campaign_id:
+            first_name:
               type: string
-            job_title:
+            last_name:
               type: string
+            email:
+              type: string
+            phone:
+              type: string
+        interview:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [completed, voicemail, incomplete, pending]
+            date:
+              type: string
+            duration_seconds:
+              type: integer
+              nullable: true
+            score:
+              type: number
+              nullable: true
+        responses:
+          type: array
+          items:
+            type: object
+            properties:
+              question:
+                type: string
+              answer:
+                type: string
+              score:
+                type: number
+              weight:
+                type: number
+              explanation:
+                type: string
+        analysis:
+          type: object
+          properties:
             availability:
               type: string
+            availability_start:
+              type: string
+              format: date
               nullable: true
             salary_expectation:
               type: string
-              nullable: true
-            interview_duration:
-              type: integer
-              description: Durée de l'entretien en secondes
-            recherche_active:
-              type: boolean
-              description: En recherche active d'emploi
-            ecoute_marche:
-              type: boolean
-              description: À l'écoute du marché
-            score_details:
-              type: object
-              additionalProperties:
-                type: object
-                properties:
-                  score:
-                    type: number
-                  explanation:
-                    type: string
-            transcript:
-              type: object
-              properties:
-                presentation:
-                  type: string
-                  description: Présentation du candidat
-                answers:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      question:
-                        type: string
-                      answer:
-                        type: string
-                      timestamp:
-                        type: number
+            candidate_alignment:
+              type: string
+            strengths:
+              type: array
+              items:
+                type: string
+            concerns:
+              type: array
+              items:
+                type: string
 
     CampaignStatus:
       type: object
@@ -318,66 +262,63 @@ components:
               type: number
             qualified_count:
               type: integer
-              description: Candidats avec score >= 7
             voicemail_count:
               type: integer
             incomplete_count:
               type: integer
+            unavailable_count:
+              type: integer
             no_answer_count:
               type: integer
+            invalid_count:
+              type: integer
 
-    CreditsInfo:
+    Credits:
       type: object
       properties:
         credits_available:
           type: number
           description: Crédits disponibles
-          example: 100.0
         credits_used_this_month:
           type: integer
           description: Crédits utilisés ce mois
-          example: 45
-        reset_date:
-          type: string
-          format: date
-          description: Date de réinitialisation mensuelle
-          example: "2025-08-01"
         subscription_type:
           type: string
           description: Type d'abonnement
-          example: VoiceHire Echo
-          enum: [Pay as you go, VoiceHire Echo, VoiceHire Resonance, VoiceHire Symphony]
+        reset_date:
+          type: string
+          format: date
+          description: Date de réinitialisation
 
 paths:
   /api/v1/campaigns:
     get:
-      summary: Lister les campagnes
-      description: Récupère la liste de toutes les campagnes de l'agence
-      operationId: listCampaigns
       tags:
-        - Campagnes
+        - Campaigns
+      summary: Liste les campagnes
+      description: Récupère la liste de toutes les campagnes de l'agence avec pagination
       parameters:
-        - name: page
-          in: query
-          description: Numéro de page (commence à 1)
+        - in: query
+          name: page
           schema:
             type: integer
-            minimum: 1
             default: 1
-        - name: per_page
-          in: query
-          description: Nombre d'éléments par page
+            minimum: 1
+          description: Numéro de page
+        - in: query
+          name: per_page
           schema:
             type: integer
+            default: 20
             minimum: 1
             maximum: 100
-            default: 20
-        - name: status
-          in: query
-          description: Filtrer par statut
+          description: Nombre de résultats par page
+        - in: query
+          name: status
           schema:
             type: string
             enum: [active, paused, completed]
+          description: Filtrer par statut
       responses:
         '200':
           description: Liste des campagnes
@@ -390,27 +331,20 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Campaign'
+                  total:
+                    type: integer
                   page:
                     type: integer
                   per_page:
                     type: integer
-                  total:
-                    type: integer
                   total_pages:
                     type: integer
-              example:
-                campaigns:
-                  - campaign_id: CAMP-20250701-ABC123
-                    job_title: Développeur Full Stack
-                    client_name: TechCorp
-                    status: active
-                    created_at: "2025-07-01T10:00:00Z"
-                    candidate_count: 15
-                    candidate_link: https://app.voicehire.io/postuler/CAMP-20250701-ABC123
-                page: 1
-                per_page: 20
-                total: 1
-                total_pages: 1
+        '400':
+          description: Paramètres invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           description: Non authentifié
           content:
@@ -418,115 +352,297 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/v1/campaigns/create:
     post:
-      summary: Créer une campagne
-      description: |
-        Crée une nouvelle campagne de recrutement avec génération automatique de 6 questions d'entretien.
-        Les questions sont générées par IA en fonction de la description du poste.
-      operationId: createCampaign
       tags:
-        - Campagnes
+        - Campaigns
+      summary: Crée une nouvelle campagne
+      description: |
+        Crée une campagne de recrutement avec génération automatique ou personnalisation des questions d'entretien.
+        
+        Si aucune question n'est fournie, 6 questions seront générées automatiquement par IA en fonction de la description du poste.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CampaignCreateRequest'
-            examples:
-              developpeur:
-                summary: Développeur Full Stack
-                value:
-                  job_title: Développeur Full Stack Node.js/React
-                  contract_type: CDI
-                  job_description: |
-                    Nous recherchons un développeur Full Stack passionné par les technologies web modernes.
-                    
-                    Responsabilités:
-                    - Développer des applications web avec Node.js et React
-                    - Participer à la conception de l'architecture
-                    - Collaborer avec l'équipe produit
-                    
-                    Compétences requises:
-                    - 3+ ans d'expérience
-                    - Maîtrise de Node.js, React
-                    - Bases de données SQL/NoSQL
-                  client_name: TechCorp SAS
-                  enable_salary_question: true
-              commercial:
-                summary: Commercial B2B
-                value:
-                  job_title: Commercial B2B Senior
-                  contract_type: CDI
-                  job_description: |
-                    Recherche commercial B2B expérimenté pour développer notre portefeuille clients.
-                    
-                    Mission:
-                    - Prospection et développement commercial
-                    - Gestion d'un portefeuille clients
-                    - Négociation de contrats
-                  enable_salary_question: true
+              $ref: '#/components/schemas/CampaignCreate'
       responses:
         '201':
           description: Campagne créée avec succès
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CampaignCreateResponse'
-              example:
-                campaign_id: CAMP-20250701-ABC123
-                candidate_link: https://app.voicehire.io/postuler/CAMP-20250701-ABC123
-                status: active
-                questions_generated: 6
-                questions_source: ai
+                type: object
+                properties:
+                  campaign_id:
+                    type: string
+                    description: ID unique de la campagne
+                  candidate_link:
+                    type: string
+                    format: uri
+                    description: Lien pour les candidats
+                  status:
+                    type: string
+                    enum: [active]
+                  questions_generated:
+                    type: integer
+                    description: Nombre de questions générées
         '400':
           description: Données invalides
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-              examples:
-                missing_fields:
-                  value:
-                    error:
-                      code: MISSING_REQUIRED_FIELDS
-                      message: Required fields are missing
-                      details:
-                        missing_fields: [job_title, contract_type]
-                invalid_contract:
-                  value:
-                    error:
-                      code: INVALID_CONTRACT_TYPE
-                      message: Invalid contract type
-                      details:
-                        valid_types: [CDI, CDD, Stage, Alternance, Freelance, Interim]
         '402':
           description: Crédits insuffisants
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-              example:
-                error:
-                  code: INSUFFICIENT_CREDITS
-                  message: No credits available
-                  details:
-                    credits_available: 0
+
+  /api/v1/campaigns/{campaign_id}/candidates:
+    post:
+      tags:
+        - Campaigns
+      summary: Ajoute des candidats à une campagne
+      description: |
+        Ajoute jusqu'à 100 candidats à une campagne et déclenche automatiquement les appels téléphoniques.
+        
+        Les candidats déjà existants (même numéro de téléphone) seront ignorés.
+        Chaque candidat ajouté consomme 1 crédit.
+      parameters:
+        - in: path
+          name: campaign_id
+          required: true
+          schema:
+            type: string
+          description: ID de la campagne
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - candidates
+              properties:
+                candidates:
+                  type: array
+                  maxItems: 100
+                  items:
+                    $ref: '#/components/schemas/Candidate'
+      responses:
+        '200':
+          description: Candidats traités
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  campaign_id:
+                    type: string
+                  candidates_added:
+                    type: integer
+                    description: Nombre de candidats ajoutés
+                  candidates_skipped:
+                    type: integer
+                    description: Nombre de candidats ignorés (déjà existants)
+                  calls_queued:
+                    type: integer
+                    description: Nombre d'appels en attente
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        index:
+                          type: integer
+                        error:
+                          type: string
+        '404':
+          description: Campagne non trouvée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags:
+        - Campaigns
+      summary: Liste les candidats d'une campagne
+      description: Récupère la liste des candidats avec leur synthèse d'entretien
+      parameters:
+        - in: path
+          name: campaign_id
+          required: true
+          schema:
+            type: string
+          description: ID de la campagne
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Numéro de page
+        - in: query
+          name: per_page
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+          description: Résultats par page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [date_desc, date_asc, score_desc, score_asc]
+            default: date_desc
+          description: Ordre de tri
+        - in: query
+          name: filter_status
+          schema:
+            type: string
+            enum: [completed, voicemail, pending]
+          description: Filtrer par statut d'entretien
+        - in: query
+          name: min_score
+          schema:
+            type: number
+          description: Score minimum
+      responses:
+        '200':
+          description: Liste des candidats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  candidates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        candidate_id:
+                          type: string
+                        first_name:
+                          type: string
+                        last_name:
+                          type: string
+                        email:
+                          type: string
+                        phone:
+                          type: string
+                        status:
+                          type: string
+                        interview_score:
+                          type: number
+                          nullable: true
+                        interview_date:
+                          type: string
+                        availability:
+                          type: string
+                        salary_expectation:
+                          type: string
+                        candidate_alignment:
+                          type: string
+                        strengths:
+                          type: string
+                        concerns:
+                          type: string
+                        is_sourced:
+                          type: boolean
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total_pages:
+                        type: integer
+
+  /api/v1/campaigns/{campaign_id}/source:
+    post:
+      tags:
+        - Campaigns
+      summary: Source des candidats avec SMS
+      description: |
+        Ajoute des candidats sourcés et leur envoie automatiquement un SMS d'invitation.
+        
+        Nécessite que l'agence ait configuré un template SMS.
+        Chaque SMS envoyé consomme 1 crédit.
+      parameters:
+        - in: path
+          name: campaign_id
+          required: true
+          schema:
+            type: string
+          description: ID de la campagne
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - candidates
+              properties:
+                candidates:
+                  type: array
+                  maxItems: 100
+                  items:
+                    type: object
+                    required:
+                      - first_name
+                      - last_name
+                      - phone
+                    properties:
+                      first_name:
+                        type: string
+                      last_name:
+                        type: string
+                      phone:
+                        type: string
+                      email:
+                        type: string
+                        nullable: true
+      responses:
+        '200':
+          description: Candidats sourcés
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  campaign_id:
+                    type: string
+                  candidates_sourced:
+                    type: integer
+                  candidates_skipped:
+                    type: integer
+                  sms_sent:
+                    type: integer
+                  errors:
+                    type: array
+                    items:
+                      type: object
 
   /api/v1/campaigns/{campaign_id}/status:
     get:
-      summary: Obtenir le statut d'une campagne
-      description: Récupère les statistiques détaillées d'une campagne
-      operationId: getCampaignStatus
       tags:
-        - Campagnes
+        - Campaigns
+      summary: Obtient le statut d'une campagne
+      description: Récupère le statut détaillé d'une campagne avec statistiques
       parameters:
-        - name: campaign_id
-          in: path
+        - in: path
+          name: campaign_id
           required: true
-          description: Identifiant de la campagne
           schema:
             type: string
-            example: CAMP-20250701-ABC123
+          description: ID de la campagne
       responses:
         '200':
           description: Statut de la campagne
@@ -534,19 +650,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CampaignStatus'
-              example:
-                campaign_id: CAMP-20250701-ABC123
-                status: active
-                stats:
-                  total_candidates: 50
-                  interviews_completed: 35
-                  average_score: 7.2
-                  time_saved_hours: 11.6
-                  completion_rate: 70.0
-                  qualified_count: 22
-                  voicemail_count: 5
-                  incomplete_count: 3
-                  no_answer_count: 7
         '404':
           description: Campagne non trouvée
           content:
@@ -555,18 +658,17 @@ paths:
                 $ref: '#/components/schemas/Error'
 
     patch:
-      summary: Modifier le statut d'une campagne
-      description: Change le statut d'une campagne (active, paused, completed)
-      operationId: updateCampaignStatus
       tags:
-        - Campagnes
+        - Campaigns
+      summary: Met à jour le statut d'une campagne
+      description: Change le statut d'une campagne (active, paused, completed)
       parameters:
-        - name: campaign_id
-          in: path
+        - in: path
+          name: campaign_id
           required: true
-          description: Identifiant de la campagne
           schema:
             type: string
+          description: ID de la campagne
       requestBody:
         required: true
         content:
@@ -579,9 +681,6 @@ paths:
                 status:
                   type: string
                   enum: [active, paused, completed]
-                  description: Nouveau statut
-            example:
-              status: paused
       responses:
         '200':
           description: Statut mis à jour
@@ -594,211 +693,21 @@ paths:
                     type: string
                   status:
                     type: string
-              example:
-                campaign_id: CAMP-20250701-ABC123
-                status: paused
-        '400':
-          description: Statut invalide
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Campagne non trouvée
-
-  /api/v1/campaigns/{campaign_id}/candidates:
-    post:
-      summary: Ajouter des candidats
-      description: |
-        Ajoute des candidats à une campagne et déclenche automatiquement les appels téléphoniques.
-        Maximum 100 candidats par requête.
-      operationId: addCandidates
-      tags:
-        - Candidats
-      parameters:
-        - name: campaign_id
-          in: path
-          required: true
-          description: Identifiant de la campagne
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CandidateAddRequest'
-            example:
-              candidates:
-                - first_name: Jean
-                  last_name: Dupont
-                  phone_number: "+33612345678"
-                  email: jean.dupont@example.com
-                - first_name: Marie
-                  last_name: Martin
-                  phone_number: "+33687654321"
-      responses:
-        '201':
-          description: Candidats ajoutés avec succès
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  added:
-                    type: integer
-                    description: Nombre de candidats ajoutés
-                  duplicates:
-                    type: integer
-                    description: Nombre de doublons ignorés
-                  invalid:
-                    type: integer
-                    description: Nombre de candidats invalides
-                  calls_queued:
-                    type: integer
-                    description: Nombre d'appels en file d'attente
-              example:
-                added: 2
-                duplicates: 0
-                invalid: 0
-                calls_queued: 2
-        '400':
-          description: Données invalides
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Campagne non trouvée
-
-    get:
-      summary: Lister les candidats d'une campagne
-      description: Récupère la liste des candidats avec options de filtrage et tri
-      operationId: listCandidates
-      tags:
-        - Candidats
-      parameters:
-        - name: campaign_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: page
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-        - name: per_page
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 50
-        - name: status
-          in: query
-          description: Filtrer par statut
-          schema:
-            type: string
-            enum: [completed, pending, voicemail]
-        - name: min_score
-          in: query
-          description: Score minimum
-          schema:
-            type: number
-            minimum: 0
-            maximum: 10
-        - name: sort
-          in: query
-          description: Ordre de tri
-          schema:
-            type: string
-            enum: [date_desc, date_asc, score_desc, score_asc]
-            default: date_desc
-      responses:
-        '200':
-          description: Liste des candidats
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  candidates:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/CandidateSummary'
-                  pagination:
-                    type: object
-                    properties:
-                      page:
-                        type: integer
-                      per_page:
-                        type: integer
-                      total:
-                        type: integer
-                      total_pages:
-                        type: integer
-
-  /api/v1/campaigns/{campaign_id}/source:
-    post:
-      summary: Sourcing de candidats
-      description: |
-        Ajoute des candidats en mode sourcing. Un SMS d'invitation est automatiquement
-        envoyé à chaque candidat avec un lien pour postuler.
-      operationId: sourceCandidates
-      tags:
-        - Candidats
-      parameters:
-        - name: campaign_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CandidateAddRequest'
-      responses:
-        '201':
-          description: Candidats sourcés avec succès
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  sourced:
-                    type: integer
-                    description: Nombre de candidats sourcés
-                  sms_sent:
-                    type: integer
-                    description: Nombre de SMS envoyés
-                  duplicates:
-                    type: integer
-                  invalid:
-                    type: integer
-              example:
-                sourced: 5
-                sms_sent: 5
-                duplicates: 0
-                invalid: 0
 
   /api/v1/candidates/{candidate_id}:
     get:
-      summary: Détails d'un candidat
-      description: Récupère les informations complètes d'un candidat incluant la transcription
-      operationId: getCandidateDetails
       tags:
-        - Candidats
+        - Candidates
+      summary: Obtient les détails d'un candidat
+      description: Récupère les informations complètes d'un candidat incluant ses réponses d'entretien
       parameters:
-        - name: candidate_id
-          in: path
+        - in: path
+          name: candidate_id
           required: true
-          description: ID ou UUID du candidat
           schema:
             type: string
+            format: uuid
+          description: UUID du candidat
       responses:
         '200':
           description: Détails du candidat
@@ -808,26 +717,29 @@ paths:
                 $ref: '#/components/schemas/CandidateDetails'
         '404':
           description: Candidat non trouvé
-
-  /api/v1/account/credits:
-    get:
-      summary: Informations sur les crédits
-      description: Récupère les informations sur les crédits disponibles et l'abonnement
-      operationId: getCredits
-      tags:
-        - Compte
-      responses:
-        '200':
-          description: Informations sur les crédits
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreditsInfo'
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/account/credits:
+    get:
+      tags:
+        - Account
+      summary: Obtient les informations de crédits
+      description: Récupère le solde de crédits et les informations d'abonnement
+      responses:
+        '200':
+          description: Informations de crédits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credits'
 
 tags:
-  - name: Campagnes
+  - name: Campaigns
     description: Gestion des campagnes de recrutement
-  - name: Candidats
+  - name: Candidates
     description: Gestion des candidats
-  - name: Compte
+  - name: Account
     description: Informations du compte

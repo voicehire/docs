@@ -1,0 +1,138 @@
+---
+title: 'Obtenir le statut d\'une campagne'
+api: 'GET /api/v1/campaigns/{campaign_id}/status'
+description: 'Récupère le statut détaillé d\'une campagne avec ses statistiques complètes'
+---
+
+## Paramètres
+
+<ParamField path="campaign_id" type="string" required>
+  Identifiant unique de la campagne
+</ParamField>
+
+## Réponse
+
+<ResponseExample>
+```json
+{
+  "campaign_id": "abc123def456",
+  "status": "active",
+  "stats": {
+    "total_candidates": 45,
+    "interviews_completed": 38,
+    "average_score": 7.2,
+    "time_saved_hours": 19.0,
+    "completion_rate": 84.4,
+    "qualified_count": 12,
+    "voicemail_count": 3,
+    "incomplete_count": 2,
+    "unavailable_count": 1,
+    "no_answer_count": 1,
+    "invalid_count": 0
+  }
+}
+```
+</ResponseExample>
+
+<ResponseField name="campaign_id" type="string" required>
+  Identifiant unique de la campagne
+</ResponseField>
+
+<ResponseField name="status" type="string" required>
+  Statut actuel de la campagne
+  
+  Valeurs possibles:
+  - `active` - Campagne active, appels en cours
+  - `paused` - Campagne en pause, appels suspendus
+  - `completed` - Campagne terminée
+</ResponseField>
+
+<ResponseField name="stats" type="object" required>
+  Statistiques détaillées de la campagne
+  
+  <Expandable title="Propriétés des statistiques">
+    <ResponseField name="total_candidates" type="integer" required>
+      Nombre total de candidats dans la campagne
+    </ResponseField>
+    
+    <ResponseField name="interviews_completed" type="integer" required>
+      Nombre d'entretiens terminés avec succès
+    </ResponseField>
+    
+    <ResponseField name="average_score" type="number" required>
+      Score moyen des candidats évalués (sur 10)
+    </ResponseField>
+    
+    <ResponseField name="time_saved_hours" type="number" required>
+      Estimation du temps économisé en heures
+    </ResponseField>
+    
+    <ResponseField name="completion_rate" type="number" required>
+      Taux de complétion des entretiens (en pourcentage)
+    </ResponseField>
+    
+    <ResponseField name="qualified_count" type="integer" required>
+      Nombre de candidats qualifiés (score ≥ 7)
+    </ResponseField>
+    
+    <ResponseField name="voicemail_count" type="integer" required>
+      Nombre de candidats tombés sur répondeur
+    </ResponseField>
+    
+    <ResponseField name="incomplete_count" type="integer" required>
+      Nombre d'entretiens incomplets
+    </ResponseField>
+    
+    <ResponseField name="unavailable_count" type="integer" required>
+      Nombre de candidats indisponibles
+    </ResponseField>
+    
+    <ResponseField name="no_answer_count" type="integer" required>
+      Nombre de candidats n'ayant pas répondu
+    </ResponseField>
+    
+    <ResponseField name="invalid_count" type="integer" required>
+      Nombre de numéros invalides
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Exemple de requête
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://app.voicehire.io/api/v1/campaigns/abc123def456/status \
+  -H "X-API-Key: vh_live_XXXXXXXXXXXXX"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://app.voicehire.io/api/v1/campaigns/abc123def456/status",
+    headers={
+        "X-API-Key": "vh_live_XXXXXXXXXXXXX"
+    }
+)
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.get(
+  'https://app.voicehire.io/api/v1/campaigns/abc123def456/status',
+  {
+    headers: {
+      'X-API-Key': 'vh_live_XXXXXXXXXXXXX'
+    }
+  }
+);
+```
+</CodeGroup>
+
+## Codes d'erreur
+
+| Code | Description |
+|------|-------------|
+| 401 | Clé API manquante ou invalide |
+| 404 | Campagne non trouvée |

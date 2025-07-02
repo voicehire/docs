@@ -1,0 +1,406 @@
+---
+title: 'Bonnes pratiques'
+description: 'Recommandations pour une intégration optimale de l\'API VoiceHire'
+---
+
+## Architecture d'intégration
+
+### 1. Utiliser les webhooks
+
+Préférez les webhooks au polling pour une architecture plus efficace :
+
+```javascript
+// ❌ Évitez le polling
+setInterval(async () => {
+  const candidates = await getCandidates(campaignId);
+  checkForUpdates(candidates);
+}, 30000);
+
+// ✅ Utilisez les webhooks
+// Configurez des webhooks pour recevoir les mises à jour en temps réel
+```
+
+### 2. Implémenter un système de queue
+
+Pour gérer de gros volumes, utilisez une queue de traitement :
+
+```python
+from celery import Celery
+import requests
+
+app = Celery('voicehire')
+
+@app.task(bind=True, max_retries=3)
+def add_candidate_batch(self, campaign_id, candidates):
+    try:
+        response = requests.post(
+            f"https://app.voicehire.io/api/v1/campaigns/{campaign_id}/candidates",
+            headers={"X-API-Key": API_KEY},
+            json={"candidates": candidates}
+        )
+        response.raise_for_status()
+        return response.json()
+    except Exception as exc:
+        # Retry avec backoff exponentiel
+        raise self.retry(exc=exc, countdown=2 ** self.request.retries)
+
+# Traiter par lots de 100
+for batch in chunks(all_candidates, 100):
+    add_candidate_batch.delay(campaign_id, batch)
+```
+
+### 3. Centraliser la gestion des erreurs
+
+Créez un client API centralisé :
+
+```javascript
+class VoiceHireClient {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.baseUrl = 'https://app.voicehire.io/api/v1';
+  }
+
+  async request(method, endpoint, data = null) {
+    const options = {
+      method,
+      headers: {
+        'X-API-Key': this.apiKey,
+        'Content-Type': 'application/json'
+      }
+    };
+
+    if (data) {
+      options.body = JSON.stringify(data);
+    }
+
+    const response = await fetch(`${this.baseUrl}${endpoint}`, options);
+    const result = await response.json();
+
+    if (!response.ok) {
+      this.handleError(result.error);
+    }
+
+    return result;
+  }
+
+  handleError(error) {
+    switch (error.code) {
+      case 'INSUFFICIENT_CREDITS':
+        throw new InsufficientCreditsError(error.message);
+      case 'RATE_LIMIT_EXCEEDED':
+        throw new RateLimitError(error.message, error.details.retry_after);
+      default:
+        throw new ApiError(error.message, error.code);
+    }
+  }
+
+  // Méthodes spécifiques
+  async createCampaign(data) {
+    return this.request('POST', '/campaigns/create', data);
+  }
+
+  async addCandidates(campaignId, candidates) {
+    return this.request('POST', `/campaigns/${campaignId}/candidates`, { candidates });
+  }
+}
+```
+
+## Gestion des données
+
+### 1. Validation côté client
+
+Validez les données avant l'envoi pour économiser des requêtes :
+
+```python
+import re
+from typing import List, Dict
+
+def validate_phone_number(phone: str) -> bool:
+    """Valide un numéro de téléphone français"""
+    # Supprimer espaces et caractères spéciaux
+    phone = re.sub(r'[^\d+]', '', phone)
+    
+    # Formats acceptés
+    patterns = [
+        r'^0[67]\d{8}$',           # 0612345678
+        r'^\+33[67]\d{8}$',        # +33612345678
+        r'^33[67]\d{8}$'           # 33612345678
+    ]
+    
+    return any(re.match(pattern, phone) for pattern in patterns)
+
+def validate_candidates(candidates: List[Dict]) -> List[Dict]:
+    """Valide et nettoie une liste de candidats"""
+    valid_candidates = []
+    errors = []
+    
+    for idx, candidate in enumerate(candidates):
+        # Vérifier les champs requis
+        if not all(k in candidate for k in ['first_name', 'last_name', 'phone', 'email']):
+            errors.append(f"Candidat {idx}: champs manquants")
+            continue
+        
+        # Valider le téléphone
+        if not validate_phone_number(candidate['phone']):
+            errors.append(f"Candidat {idx}: numéro invalide {candidate['phone']}")
+            continue
+        
+        # Normaliser le téléphone
+        phone = re.sub(r'[^\d+]', '', candidate['phone'])
+        if phone.startswith('+33'):
+            phone = '0' + phone[3:]
+        elif phone.startswith('33'):
+            phone = '0' + phone[2:]
+        
+        candidate['phone'] = phone
+        valid_candidates.append(candidate)
+    
+    return valid_candidates, errors
+```
+
+### 2. Dédupliquer les candidats
+
+Évitez d'envoyer des doublons :
+
+```javascript
+function deduplicateCandidates(candidates) {
+  const seen = new Set();
+  const unique = [];
+  
+  for (const candidate of candidates) {
+    const key = candidate.phone.replace(/\D/g, ''); // Normaliser
+    
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(candidate);
+    }
+  }
+  
+  return unique;
+}
+```
+
+### 3. Synchronisation avec votre système
+
+Maintenez une correspondance entre vos IDs et ceux de VoiceHire :
+
+```python
+class CandidateSync:
+    def __init__(self, db):
+        self.db = db
+        self.client = VoiceHireClient(API_KEY)
+    
+    async def sync_candidate(self, internal_id, voicehire_data):
+        """Synchronise un candidat avec notre base de données"""
+        # Stocker la correspondance
+        await self.db.execute("""
+            INSERT INTO candidate_mappings (internal_id, voicehire_id, campaign_id)
+            VALUES (?, ?, ?)
+            ON CONFLICT(internal_id) DO UPDATE SET
+                voicehire_id = excluded.voicehire_id,
+                updated_at = CURRENT_TIMESTAMP
+        """, internal_id, voicehire_data['candidate_id'], voicehire_data['campaign_id'])
+        
+        # Mettre à jour les données du candidat
+        if voicehire_data.get('interview_score'):
+            await self.update_candidate_score(internal_id, voicehire_data)
+    
+    async def handle_webhook(self, event_data):
+        """Traite un webhook VoiceHire"""
+        if event_data['event'] == 'candidate.interview.completed':
+            internal_id = await self.get_internal_id(event_data['data']['candidate_id'])
+            if internal_id:
+                await self.sync_candidate(internal_id, event_data['data'])
+```
+
+## Performance et optimisation
+
+### 1. Mise en cache intelligente
+
+Implémentez un cache avec invalidation :
+
+```javascript
+class CacheManager {
+  constructor(ttl = 300) { // 5 minutes par défaut
+    this.cache = new Map();
+    this.ttl = ttl * 1000;
+  }
+
+  set(key, value) {
+    this.cache.set(key, {
+      value,
+      expires: Date.now() + this.ttl
+    });
+  }
+
+  get(key) {
+    const item = this.cache.get(key);
+    if (!item) return null;
+    
+    if (Date.now() > item.expires) {
+      this.cache.delete(key);
+      return null;
+    }
+    
+    return item.value;
+  }
+
+  invalidate(pattern) {
+    // Invalider toutes les clés correspondant au pattern
+    for (const key of this.cache.keys()) {
+      if (key.includes(pattern)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+}
+
+const cache = new CacheManager();
+
+async function getCampaignWithCache(campaignId) {
+  const cacheKey = `campaign:${campaignId}`;
+  
+  // Vérifier le cache
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
+  
+  // Récupérer depuis l'API
+  const data = await api.getCampaign(campaignId);
+  cache.set(cacheKey, data);
+  
+  return data;
+}
+```
+
+### 2. Traitement par lots efficace
+
+Optimisez vos imports de masse :
+
+```python
+async def import_candidates_optimized(campaign_id, candidates_file):
+    """Import optimisé de candidats depuis un fichier"""
+    results = {
+        'total': 0,
+        'success': 0,
+        'errors': [],
+        'duplicates': 0
+    }
+    
+    # Traiter par chunks pour ne pas surcharger la mémoire
+    async for chunk in read_csv_chunks(candidates_file, chunk_size=1000):
+        # Valider et dédupliquer
+        valid_candidates, errors = validate_candidates(chunk)
+        results['errors'].extend(errors)
+        
+        # Envoyer par lots de 100 (limite API)
+        for batch in chunks(valid_candidates, 100):
+            try:
+                response = await api.add_candidates(campaign_id, batch)
+                results['success'] += response['candidates_added']
+                results['duplicates'] += response['candidates_skipped']
+            except InsufficientCreditsError:
+                # Arrêter si plus de crédits
+                results['errors'].append("Import arrêté: crédits insuffisants")
+                return results
+            except Exception as e:
+                results['errors'].append(f"Erreur batch: {str(e)}")
+        
+        results['total'] += len(chunk)
+        
+        # Pause entre les chunks pour respecter les limites
+        await asyncio.sleep(1)
+    
+    return results
+```
+
+### 3. Monitoring et alerting
+
+Surveillez votre intégration :
+
+```python
+import logging
+from datetime import datetime
+import prometheus_client as prom
+
+# Métriques Prometheus
+api_requests = prom.Counter('voicehire_api_requests_total', 'Total API requests', ['endpoint', 'status'])
+api_latency = prom.Histogram('voicehire_api_latency_seconds', 'API latency', ['endpoint'])
+credits_remaining = prom.Gauge('voicehire_credits_remaining', 'Credits remaining')
+
+class MonitoredVoiceHireClient(VoiceHireClient):
+    async def request(self, method, endpoint, data=None):
+        start_time = datetime.now()
+        status = 'success'
+        
+        try:
+            result = await super().request(method, endpoint, data)
+            return result
+        except Exception as e:
+            status = 'error'
+            raise
+        finally:
+            # Enregistrer les métriques
+            duration = (datetime.now() - start_time).total_seconds()
+            api_requests.labels(endpoint=endpoint, status=status).inc()
+            api_latency.labels(endpoint=endpoint).observe(duration)
+            
+            # Logger les requêtes lentes
+            if duration > 5:
+                logging.warning(f"Slow API call: {endpoint} took {duration:.2f}s")
+
+    async def check_credits(self):
+        """Vérifie les crédits et alerte si nécessaire"""
+        credits = await self.get_credits()
+        credits_remaining.set(credits['credits_available'])
+        
+        # Alerter si crédits faibles
+        if credits['credits_available'] < 50:
+            logging.critical(f"Low credits: {credits['credits_available']} remaining")
+            # Envoyer une notification (email, Slack, etc.)
+```
+
+## Sécurité
+
+### 1. Stockage sécurisé des clés API
+
+Ne jamais exposer votre clé API :
+
+```python
+import os
+from dotenv import load_dotenv
+
+# Charger depuis .env
+load_dotenv()
+
+class Config:
+    VOICEHIRE_API_KEY = os.environ.get('VOICEHIRE_API_KEY')
+    WEBHOOK_SECRET = os.environ.get('VOICEHIRE_WEBHOOK_SECRET')
+    
+    @classmethod
+    def validate(cls):
+        if not cls.VOICEHIRE_API_KEY:
+            raise ValueError("VOICEHIRE_API_KEY not set")
+```
+
+### 2. Validation des webhooks
+
+Toujours vérifier la signature :
+
+```python
+def verify_webhook_signature(request_body, signature, secret):
+    """Vérifie la signature HMAC d'un webhook"""
+    if not signature or not secret:
+        return False
+    
+    expected = 'sha256=' + hmac.new(
+        secret.encode(),
+        request_body,
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(signature, expected)
+```
+
+### 3. Limitation des permissions
+
+Créez des clés API avec des permissions minimales pour chaque usage.

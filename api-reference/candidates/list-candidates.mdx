@@ -1,0 +1,208 @@
+---
+title: 'Lister les candidats'
+api: 'GET /api/v1/campaigns/{campaign_id}/candidates'
+description: 'Récupère la liste des candidats d\'une campagne avec leur synthèse d\'entretien'
+---
+
+## Paramètres
+
+<ParamField path="campaign_id" type="string" required>
+  Identifiant unique de la campagne
+</ParamField>
+
+<ParamField query="page" type="integer" default="1">
+  Numéro de la page à récupérer
+</ParamField>
+
+<ParamField query="per_page" type="integer" default="50">
+  Nombre de résultats par page (maximum: 100)
+</ParamField>
+
+<ParamField query="sort" type="string" default="date_desc">
+  Ordre de tri des résultats
+  
+  Valeurs possibles:
+  - `date_desc` - Plus récents en premier
+  - `date_asc` - Plus anciens en premier
+  - `score_desc` - Meilleurs scores en premier
+  - `score_asc` - Scores les plus faibles en premier
+</ParamField>
+
+<ParamField query="filter_status" type="string">
+  Filtrer par statut d'entretien
+  
+  Valeurs possibles:
+  - `completed` - Entretiens terminés
+  - `voicemail` - Tombés sur répondeur
+  - `pending` - En attente d'appel
+</ParamField>
+
+<ParamField query="min_score" type="number">
+  Score minimum pour filtrer les candidats (0-10)
+</ParamField>
+
+## Réponse
+
+<ResponseExample>
+```json
+{
+  "candidates": [
+    {
+      "candidate_id": "550e8400-e29b-41d4-a716-446655440000",
+      "first_name": "Jean",
+      "last_name": "Dupont",
+      "email": "jean.dupont@example.com",
+      "phone": "0612345678",
+      "status": "completed",
+      "interview_score": 8.5,
+      "interview_date": "2024-01-15T14:30:00Z",
+      "availability": "Immédiatement",
+      "salary_expectation": "45000-50000€",
+      "candidate_alignment": "Excellente correspondance avec le profil recherché",
+      "strengths": "Expérience solide en React, Bonne communication, Motivé",
+      "concerns": "Peu d'expérience en gestion d'équipe",
+      "is_sourced": false
+    }
+  ],
+  "pagination": {
+    "total": 125,
+    "page": 1,
+    "per_page": 50,
+    "total_pages": 3
+  }
+}
+```
+</ResponseExample>
+
+<ResponseField name="candidates" type="array" required>
+  Liste des candidats
+  
+  <Expandable title="Propriétés de chaque candidat">
+    <ResponseField name="candidate_id" type="string" required>
+      Identifiant unique du candidat (UUID)
+    </ResponseField>
+    
+    <ResponseField name="first_name" type="string" required>
+      Prénom du candidat
+    </ResponseField>
+    
+    <ResponseField name="last_name" type="string" required>
+      Nom de famille du candidat
+    </ResponseField>
+    
+    <ResponseField name="email" type="string" required>
+      Email du candidat
+    </ResponseField>
+    
+    <ResponseField name="phone" type="string" required>
+      Numéro de téléphone
+    </ResponseField>
+    
+    <ResponseField name="status" type="string" required>
+      Statut de l'entretien (`completed`, `voicemail`, `pending`, `incomplete`)
+    </ResponseField>
+    
+    <ResponseField name="interview_score" type="number">
+      Score de l'entretien (0-10), null si non complété
+    </ResponseField>
+    
+    <ResponseField name="interview_date" type="string">
+      Date de l'entretien (ISO 8601)
+    </ResponseField>
+    
+    <ResponseField name="availability" type="string">
+      Disponibilité du candidat
+    </ResponseField>
+    
+    <ResponseField name="salary_expectation" type="string">
+      Prétentions salariales
+    </ResponseField>
+    
+    <ResponseField name="candidate_alignment" type="string">
+      Analyse de l'alignement avec le poste
+    </ResponseField>
+    
+    <ResponseField name="strengths" type="string">
+      Points forts identifiés
+    </ResponseField>
+    
+    <ResponseField name="concerns" type="string">
+      Points d'attention
+    </ResponseField>
+    
+    <ResponseField name="is_sourced" type="boolean" required>
+      Indique si le candidat a été sourcé via SMS
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="pagination" type="object" required>
+  Informations de pagination
+  
+  <Expandable title="Propriétés">
+    <ResponseField name="total" type="integer" required>
+      Nombre total de candidats
+    </ResponseField>
+    
+    <ResponseField name="page" type="integer" required>
+      Page actuelle
+    </ResponseField>
+    
+    <ResponseField name="per_page" type="integer" required>
+      Nombre de résultats par page
+    </ResponseField>
+    
+    <ResponseField name="total_pages" type="integer" required>
+      Nombre total de pages
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Exemple de requête
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://app.voicehire.io/api/v1/campaigns/abc123def456/candidates?sort=score_desc&min_score=7" \
+  -H "X-API-Key: vh_live_XXXXXXXXXXXXX"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://app.voicehire.io/api/v1/campaigns/abc123def456/candidates",
+    headers={
+        "X-API-Key": "vh_live_XXXXXXXXXXXXX"
+    },
+    params={
+        "sort": "score_desc",
+        "min_score": 7
+    }
+)
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.get(
+  'https://app.voicehire.io/api/v1/campaigns/abc123def456/candidates',
+  {
+    headers: {
+      'X-API-Key': 'vh_live_XXXXXXXXXXXXX'
+    },
+    params: {
+      sort: 'score_desc',
+      min_score: 7
+    }
+  }
+);
+```
+</CodeGroup>
+
+## Codes d'erreur
+
+| Code | Description |
+|------|-------------|
+| 400 | Paramètres de requête invalides |
+| 401 | Clé API manquante ou invalide |
+| 404 | Campagne non trouvée |

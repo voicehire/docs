@@ -1,0 +1,166 @@
+---
+title: 'Sourcer des candidats'
+api: 'POST /api/v1/campaigns/{campaign_id}/source'
+description: 'Ajoute des candidats sourcés et leur envoie automatiquement un SMS d\'invitation'
+---
+
+## Paramètres
+
+<ParamField path="campaign_id" type="string" required>
+  Identifiant unique de la campagne
+</ParamField>
+
+## Corps de la requête
+
+<ParamField body="candidates" type="array" required>
+  Liste des candidats à sourcer (maximum 100)
+  
+  <Expandable title="Propriétés de chaque candidat">
+    <ParamField body="first_name" type="string" required>
+      Prénom du candidat
+    </ParamField>
+    
+    <ParamField body="last_name" type="string" required>
+      Nom de famille du candidat
+    </ParamField>
+    
+    <ParamField body="phone" type="string" required>
+      Numéro de téléphone français (06 ou 07)
+    </ParamField>
+    
+    <ParamField body="email" type="string">
+      Adresse email du candidat (optionnelle)
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Réponse
+
+<ResponseExample>
+```json
+{
+  "campaign_id": "abc123def456",
+  "candidates_sourced": 8,
+  "candidates_skipped": 2,
+  "sms_sent": 8,
+  "errors": []
+}
+```
+</ResponseExample>
+
+<ResponseField name="campaign_id" type="string" required>
+  Identifiant de la campagne
+</ResponseField>
+
+<ResponseField name="candidates_sourced" type="integer" required>
+  Nombre de candidats sourcés avec succès
+</ResponseField>
+
+<ResponseField name="candidates_skipped" type="integer" required>
+  Nombre de candidats ignorés (déjà présents)
+</ResponseField>
+
+<ResponseField name="sms_sent" type="integer" required>
+  Nombre de SMS envoyés
+</ResponseField>
+
+<ResponseField name="errors" type="array">
+  Liste des erreurs rencontrées
+</ResponseField>
+
+## Exemple de requête
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://app.voicehire.io/api/v1/campaigns/abc123def456/source \
+  -H "X-API-Key: vh_live_XXXXXXXXXXXXX" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "candidates": [
+      {
+        "first_name": "Pierre",
+        "last_name": "Durand",
+        "phone": "0612345678"
+      },
+      {
+        "first_name": "Sophie",
+        "last_name": "Bernard",
+        "phone": "0687654321",
+        "email": "sophie.bernard@example.com"
+      }
+    ]
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://app.voicehire.io/api/v1/campaigns/abc123def456/source",
+    headers={
+        "X-API-Key": "vh_live_XXXXXXXXXXXXX",
+        "Content-Type": "application/json"
+    },
+    json={
+        "candidates": [
+            {
+                "first_name": "Pierre",
+                "last_name": "Durand",
+                "phone": "0612345678"
+            },
+            {
+                "first_name": "Sophie",
+                "last_name": "Bernard",
+                "phone": "0687654321",
+                "email": "sophie.bernard@example.com"
+            }
+        ]
+    }
+)
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.post(
+  'https://app.voicehire.io/api/v1/campaigns/abc123def456/source',
+  {
+    candidates: [
+      {
+        first_name: 'Pierre',
+        last_name: 'Durand',
+        phone: '0612345678'
+      },
+      {
+        first_name: 'Sophie',
+        last_name: 'Bernard',
+        phone: '0687654321',
+        email: 'sophie.bernard@example.com'
+      }
+    ]
+  },
+  {
+    headers: {
+      'X-API-Key': 'vh_live_XXXXXXXXXXXXX',
+      'Content-Type': 'application/json'
+    }
+  }
+);
+```
+</CodeGroup>
+
+## Notes importantes
+
+- Les candidats sourcés reçoivent un SMS d'invitation (nécessite un template SMS configuré)
+- Chaque SMS envoyé consomme 1 crédit
+- Les candidats doivent cliquer sur le lien SMS pour s'inscrire et être appelés
+- L'email est optionnel mais recommandé pour le suivi
+
+## Codes d'erreur
+
+| Code | Description |
+|------|-------------|
+| 400 | Données invalides ou template SMS non configuré |
+| 401 | Clé API manquante ou invalide |
+| 402 | Crédits insuffisants |
+| 404 | Campagne non trouvée |

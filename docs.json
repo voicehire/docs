@@ -18,7 +18,8 @@
       }
     },
     "playground": {
-      "mode": "show"
+      "mode": "show",
+      "enabled": true
     }
   },
   "navigation": {

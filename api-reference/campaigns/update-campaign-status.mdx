@@ -88,8 +88,8 @@ const response = await axios.patch(
 
 ## Notes importantes
 
-- **Active → Paused**: Les appels en cours continuent, mais aucun nouvel appel n'est initié
-- **Paused → Active**: Les appels reprennent pour les candidats en attente
+- **Active → Paused**: Les appels en cours continuent, mais aucun nouvel appel n'est initié et aucun nouveau candidat ne peut être ajouté
+- **Paused → Active**: La campagne accepte à nouveau l'ajout de nouveaux candidats
 - **Any → Completed**: Statut définitif, la campagne ne peut plus être réactivée
 
 ## Codes d'erreur

@@ -58,14 +58,14 @@ Commencez à utiliser l'API VoiceHire en 3 étapes simples :
   <Step title="Faites votre première requête">
     Testez votre connexion en vérifiant vos crédits disponibles
     ```bash
-    curl -X GET https://app.voicehire.io/api/v1/account/credits \
+    curl -X GET https://staging.app.voicehire.io/api/v1/account/credits \
       -H "X-API-Key: vh_live_VOTRE_CLE_API"
     ```
   </Step>
   <Step title="Créez votre première campagne">
     Lancez une campagne de recrutement avec génération automatique des questions
     ```bash
-    curl -X POST https://app.voicehire.io/api/v1/campaigns \
+    curl -X POST https://staging.app.voicehire.io/api/v1/campaigns \
       -H "X-API-Key: vh_live_VOTRE_CLE_API" \
       -H "Content-Type: application/json" \
       -d '{

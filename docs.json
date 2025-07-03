@@ -10,7 +10,7 @@
   "favicon": "/favicon.png",
   "openapi": "/openapi.yaml",
   "api": {
-    "baseUrl": "https://app.voicehire.io",
+    "baseUrl": "https://staging.app.voicehire.io",
     "mdx": {
       "auth": {
         "method": "key",
@@ -81,7 +81,7 @@
       "anchors": [
         {
           "anchor": "Application VoiceHire",
-          "href": "https://app.voicehire.io",
+          "href": "https://staging.app.voicehire.io",
           "icon": "browser"
         },
         {
@@ -125,7 +125,7 @@
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://app.voicehire.io"
+      "href": "https://staging.app.voicehire.io"
     }
   }
 }

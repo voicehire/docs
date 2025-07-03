@@ -39,7 +39,7 @@ info:
     url: https://www.voicehire.io
 
 servers:
-  - url: https://app.voicehire.io
+  - url: https://staging.app.voicehire.io
     description: Production
   - url: http://localhost:8080
     description: Développement local

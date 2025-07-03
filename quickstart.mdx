@@ -22,7 +22,7 @@ Commençons par vérifier que votre clé API fonctionne en récupérant vos info
 <CodeGroup>
 
 ```bash cURL
-curl -X GET https://app.voicehire.io/api/v1/account/credits \
+curl -X GET https://staging.app.voicehire.io/api/v1/account/credits \
   -H "X-API-Key: vh_live_VOTRE_CLE_API"
 ```
 
@@ -32,7 +32,7 @@ import httpx
 headers = {"X-API-Key": "vh_live_VOTRE_CLE_API"}
 
 response = httpx.get(
-    "https://app.voicehire.io/api/v1/account/credits",
+    "https://staging.app.voicehire.io/api/v1/account/credits",
     headers=headers
 )
 
@@ -40,7 +40,7 @@ print(response.json())
 ```
 
 ```javascript Node.js
-const response = await fetch('https://app.voicehire.io/api/v1/account/credits', {
+const response = await fetch('https://staging.app.voicehire.io/api/v1/account/credits', {
   headers: {
     'X-API-Key': 'vh_live_VOTRE_CLE_API'
   }
@@ -69,7 +69,7 @@ Maintenant, créons une campagne de recrutement. L'API génèrera automatiquemen
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://app.voicehire.io/api/v1/campaigns/create \
+curl -X POST https://staging.app.voicehire.io/api/v1/campaigns/create \
   -H "X-API-Key: vh_live_VOTRE_CLE_API" \
   -H "Content-Type: application/json" \
   -d '{
@@ -101,7 +101,7 @@ campaign_data = {
 }
 
 response = httpx.post(
-    "https://app.voicehire.io/api/v1/campaigns/create",
+    "https://staging.app.voicehire.io/api/v1/campaigns/create",
     headers=headers,
     json=campaign_data
 )
@@ -121,7 +121,7 @@ const campaignData = {
   enable_salary_question: true
 };
 
-const response = await fetch('https://app.voicehire.io/api/v1/campaigns/create', {
+const response = await fetch('https://staging.app.voicehire.io/api/v1/campaigns/create', {
   method: 'POST',
   headers: {
     'X-API-Key': 'vh_live_VOTRE_CLE_API',
@@ -140,7 +140,7 @@ Réponse attendue :
 ```json
 {
   "campaign_id": "abc123def456",
-  "candidate_link": "https://app.voicehire.io/link/abc123def456",
+  "candidate_link": "https://staging.app.voicehire.io/link/abc123def456",
   "status": "active",
   "questions_generated": 6
 }
@@ -157,7 +157,7 @@ Ajoutons maintenant des candidats à votre campagne. Les appels téléphoniques 
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://app.voicehire.io/api/v1/campaigns/abc123def456/candidates \
+curl -X POST https://staging.app.voicehire.io/api/v1/campaigns/abc123def456/candidates \
   -H "X-API-Key: vh_live_VOTRE_CLE_API" \
   -H "Content-Type: application/json" \
   -d '{
@@ -197,7 +197,7 @@ candidates_data = {
 }
 
 response = httpx.post(
-    f"https://app.voicehire.io/api/v1/campaigns/{campaign_id}/candidates",
+    f"https://staging.app.voicehire.io/api/v1/campaigns/{campaign_id}/candidates",
     headers=headers,
     json=candidates_data
 )
@@ -223,7 +223,7 @@ const candidatesData = {
   ]
 };
 
-const response = await fetch(`https://app.voicehire.io/api/v1/campaigns/${campaignId}/candidates`, {
+const response = await fetch(`https://staging.app.voicehire.io/api/v1/campaigns/${campaignId}/candidates`, {
   method: 'POST',
   headers: {
     'X-API-Key': 'vh_live_VOTRE_CLE_API',
@@ -256,13 +256,13 @@ Vérifiez l'avancement de votre campagne et les statistiques :
 <CodeGroup>
 
 ```bash cURL
-curl -X GET https://app.voicehire.io/api/v1/campaigns/abc123def456/status \
+curl -X GET https://staging.app.voicehire.io/api/v1/campaigns/abc123def456/status \
   -H "X-API-Key: vh_live_VOTRE_CLE_API"
 ```
 
 ```python Python
 response = httpx.get(
-    f"https://app.voicehire.io/api/v1/campaigns/{campaign_id}/status",
+    f"https://staging.app.voicehire.io/api/v1/campaigns/{campaign_id}/status",
     headers=headers
 )
 
@@ -270,7 +270,7 @@ print(response.json())
 ```
 
 ```javascript Node.js
-const response = await fetch(`https://app.voicehire.io/api/v1/campaigns/${campaignId}/status`, {
+const response = await fetch(`https://staging.app.voicehire.io/api/v1/campaigns/${campaignId}/status`, {
   headers: {
     'X-API-Key': 'vh_live_VOTRE_CLE_API'
   }
@@ -302,8 +302,8 @@ Félicitations ! Vous avez créé votre première campagne et ajouté des candid
     Apprenez à inviter des candidats par SMS
   </Card>
   <Card
-    title="Récupérer les détails"
-    icon="file-alt"
+    title="Récupérer les détails d'un entretien"
+    icon="file-lines"
     href="/api-reference/candidates/get-candidate-details"
   >
     Accédez aux transcriptions et scores
@@ -327,7 +327,7 @@ import time
 
 # Configuration
 API_KEY = "vh_live_VOTRE_CLE_API"
-BASE_URL = "https://app.voicehire.io/api/v1"
+BASE_URL = "https://staging.app.voicehire.io/api/v1"
 
 headers = {
     "X-API-Key": API_KEY,

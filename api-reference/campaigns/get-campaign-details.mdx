@@ -1,0 +1,240 @@
+---
+title: "Obtenir les détails d'une campagne"
+api: "GET /api/v1/campaigns/{campaign_id}/details"
+description: "Récupère tous les détails complets d'une campagne : informations générales, questions d'entretien avec poids, et paramètres de configuration"
+playground: true
+---
+
+## Paramètres
+
+<ParamField path="campaign_id" type="string" required>
+  Identifiant unique de la campagne
+</ParamField>
+
+## Réponse
+
+<ResponseExample>
+```json
+{
+  "campaign_id": "abc123def456",
+  "job_title": "Développeur Full Stack",
+  "contract_type": "CDI",
+  "job_description": "Nous recherchons un développeur full stack expérimenté...",
+  "company_name": "TechCorp",
+  "client_company": "StartupInnovante",
+  "additional_info": "Télétravail possible 2 jours par semaine",
+  "created_at": "2024-01-15T10:30:00",
+  "updated_at": "2024-01-15T10:30:00",
+  "status": "active",
+  "questions": [
+    {
+      "order": 1,
+      "question": "Pouvez-vous décrire votre expérience avec React et Node.js ?",
+      "weight": 2.0
+    },
+    {
+      "order": 2,
+      "question": "Comment gérez-vous le travail en équipe agile ?",
+      "weight": 1.5
+    },
+    {
+      "order": 3,
+      "question": "Quelle est votre approche pour résoudre des problèmes complexes ?",
+      "weight": 1.0
+    }
+  ],
+  "campaign_settings": {
+    "prequalification_type": "mass",
+    "is_simplified": false,
+    "shared": false,
+    "language_test_mode": "none",
+    "override_agent_id": null,
+    "enable_salary_question": true,
+    "enable_job_search_question": true,
+    "enable_availability_question": true,
+    "enable_engage": null,
+    "enable_recap_interview": null,
+    "enable_recap_job": null
+  }
+}
+```
+</ResponseExample>
+
+<ResponseField name="campaign_id" type="string" required>
+  Identifiant unique de la campagne
+</ResponseField>
+
+<ResponseField name="job_title" type="string" required>
+  Titre du poste proposé
+</ResponseField>
+
+<ResponseField name="contract_type" type="string" required>
+  Type de contrat (CDI, CDD, Stage, etc.)
+</ResponseField>
+
+<ResponseField name="job_description" type="string" required>
+  Description complète du poste et de l'offre d'emploi
+</ResponseField>
+
+<ResponseField name="company_name" type="string" required>
+  Nom de l'entreprise qui recrute
+</ResponseField>
+
+<ResponseField name="client_company" type="string">
+  Nom de l'entreprise cliente (si différent de l'entreprise qui recrute)
+</ResponseField>
+
+<ResponseField name="additional_info" type="string">
+  Informations complémentaires sur le poste
+</ResponseField>
+
+<ResponseField name="created_at" type="string" required>
+  Date et heure de création de la campagne (format ISO 8601)
+</ResponseField>
+
+<ResponseField name="updated_at" type="string" required>
+  Date et heure de dernière modification (format ISO 8601)
+</ResponseField>
+
+<ResponseField name="status" type="string" required>
+  Statut actuel de la campagne
+  
+  Valeurs possibles:
+  - `active` - Campagne active, appels en cours
+  - `paused` - Campagne en pause, appels suspendus
+  - `completed` - Campagne terminée
+</ResponseField>
+
+<ResponseField name="questions" type="array" required>
+  Liste des questions d'entretien avec leurs poids respectifs
+  
+  <Expandable title="Structure d'une question">
+    <ResponseField name="order" type="integer" required>
+      Ordre d'apparition de la question dans l'entretien
+    </ResponseField>
+    
+    <ResponseField name="question" type="string" required>
+      Texte de la question à poser au candidat
+    </ResponseField>
+    
+    <ResponseField name="weight" type="number" required>
+      Poids de la question dans le calcul du score final
+      
+      Valeurs possibles:
+      - `0` : Question facultative (aucun impact sur le score)
+      - `0.5` : Question secondaire (demi-poids)
+      - `1.0` : Poids standard
+      - `1.5` : Question importante (poids renforcé)
+      - `2.0` : Question critique (double poids)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="campaign_settings" type="object" required>
+  Paramètres de configuration de la campagne
+  
+  <Expandable title="Paramètres de fonctionnalités">
+    <ResponseField name="language_test_mode" type="string" required>
+      Mode de test linguistique
+      - `none` : Aucun test
+      - `english` : Test d'anglais activé
+    </ResponseField>
+    
+    <ResponseField name="enable_salary_question" type="boolean">
+      Active la question sur les prétentions salariales
+    </ResponseField>
+    
+    <ResponseField name="enable_job_search_question" type="boolean">
+      Active la question sur la recherche d'emploi
+    </ResponseField>
+    
+    <ResponseField name="enable_availability_question" type="boolean">
+      Active la question sur la disponibilité
+    </ResponseField>
+    
+    <ResponseField name="enable_engage" type="boolean">
+      Active les fonctionnalités d'engagement avancées
+    </ResponseField>
+    
+    <ResponseField name="enable_recap_interview" type="boolean">
+      Active le récapitulatif d'entretien
+    </ResponseField>
+    
+    <ResponseField name="enable_recap_job" type="boolean">
+      Active le récapitulatif du poste
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Exemple de requête
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://app.voicehire.io/api/v1/campaigns/abc123def456/details \
+  -H "X-API-Key: vh_live_XXXXXXXXXXXXX"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://app.voicehire.io/api/v1/campaigns/abc123def456/details",
+    headers={
+        "X-API-Key": "vh_live_XXXXXXXXXXXXX"
+    }
+)
+
+campaign_details = response.json()
+print(f"Campagne: {campaign_details['job_title']}")
+print(f"Questions: {len(campaign_details['questions'])}")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.get(
+  'https://app.voicehire.io/api/v1/campaigns/abc123def456/details',
+  {
+    headers: {
+      'X-API-Key': 'vh_live_XXXXXXXXXXXXX'
+    }
+  }
+);
+
+const campaign = response.data;
+console.log(`Campagne: ${campaign.job_title}`);
+console.log(`Questions: ${campaign.questions.length}`);
+```
+
+```php PHP
+<?php
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, 'https://app.voicehire.io/api/v1/campaigns/abc123def456/details');
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'X-API-Key: vh_live_XXXXXXXXXXXXX'
+]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+$response = curl_exec($ch);
+$campaign = json_decode($response, true);
+
+echo "Campagne: " . $campaign['job_title'] . "\n";
+echo "Questions: " . count($campaign['questions']) . "\n";
+curl_close($ch);
+?>
+```
+</CodeGroup>
+
+## Notes techniques
+
+- **Formats de questions** : L'endpoint gère automatiquement plusieurs formats de stockage (JSON moderne avec poids, format legacy, texte simple)
+- **Poids par défaut** : Si aucun poids n'est spécifié, la valeur par défaut est `1.0`
+- **Permissions** : Seules les campagnes appartenant à votre agence sont accessibles
+
+## Codes d'erreur
+
+| Code | Description |
+|------|-------------|
+| 401 | Clé API manquante ou invalide |
+| 404 | Campagne non trouvée ou n'appartient pas à votre agence |
+| 500 | Erreur interne du serveur |

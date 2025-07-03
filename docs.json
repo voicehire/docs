@@ -7,7 +7,7 @@
     "light": "#6366F1",
     "dark": "#4338CA"
   },
-  "favicon": "/favicon.ico",
+  "favicon": "/favicon.png",
   "openapi": "/openapi.yaml",
   "api": {
     "baseUrl": "https://app.voicehire.io",
@@ -54,6 +54,7 @@
             "pages": [
               "api-reference/campaigns/list-campaigns",
               "api-reference/campaigns/create-campaign",
+              "api-reference/campaigns/get-campaign-details",
               "api-reference/campaigns/get-campaign-status",
               "api-reference/campaigns/update-campaign-status"
             ]

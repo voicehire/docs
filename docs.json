@@ -10,12 +10,14 @@
   "favicon": "/favicon.png",
   "openapi": "/openapi.yaml",
   "api": {
+    "mdx": {
+      "auth": {
+        "method": "key",
+        "name": "X-API-Key"
+      }
+    },
     "playground": {
       "mode": "show"
-    },
-    "auth": {
-      "method": "key",
-      "name": "X-API-Key"
     }
   },
   "navigation": {

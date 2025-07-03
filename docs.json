@@ -7,7 +7,7 @@
     "light": "#6366F1",
     "dark": "#4338CA"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.ico",
   "openapi": "/openapi.yaml",
   "api": {
     "baseUrl": "https://app.voicehire.io",

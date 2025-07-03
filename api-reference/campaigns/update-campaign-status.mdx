@@ -45,7 +45,7 @@ playground: true
 
 <CodeGroup>
 ```bash cURL
-curl -X PATCH https://app.voicehire.io/api/v1/campaigns/abc123def456/status \
+curl -X PATCH https://staging.app.voicehire.io/api/v1/campaigns/abc123def456/status \
   -H "X-API-Key: vh_live_XXXXXXXXXXXXX" \
   -H "Content-Type: application/json" \
   -d '{
@@ -57,7 +57,7 @@ curl -X PATCH https://app.voicehire.io/api/v1/campaigns/abc123def456/status \
 import requests
 
 response = requests.patch(
-    "https://app.voicehire.io/api/v1/campaigns/abc123def456/status",
+    "https://staging.app.voicehire.io/api/v1/campaigns/abc123def456/status",
     headers={
         "X-API-Key": "vh_live_XXXXXXXXXXXXX",
         "Content-Type": "application/json"
@@ -72,7 +72,7 @@ response = requests.patch(
 const axios = require('axios');
 
 const response = await axios.patch(
-  'https://app.voicehire.io/api/v1/campaigns/abc123def456/status',
+  'https://staging.app.voicehire.io/api/v1/campaigns/abc123def456/status',
   {
     status: 'paused'
   },

@@ -178,7 +178,7 @@ playground: true
 
 <CodeGroup>
 ```bash cURL
-curl -X GET https://app.voicehire.io/api/v1/candidates/550e8400-e29b-41d4-a716-446655440000 \
+curl -X GET https://staging.app.voicehire.io/api/v1/candidates/550e8400-e29b-41d4-a716-446655440000 \
   -H "X-API-Key: vh_live_XXXXXXXXXXXXX"
 ```
 
@@ -186,7 +186,7 @@ curl -X GET https://app.voicehire.io/api/v1/candidates/550e8400-e29b-41d4-a716-4
 import requests
 
 response = requests.get(
-    "https://app.voicehire.io/api/v1/candidates/550e8400-e29b-41d4-a716-446655440000",
+    "https://staging.app.voicehire.io/api/v1/candidates/550e8400-e29b-41d4-a716-446655440000",
     headers={
         "X-API-Key": "vh_live_XXXXXXXXXXXXX"
     }
@@ -197,7 +197,7 @@ response = requests.get(
 const axios = require('axios');
 
 const response = await axios.get(
-  'https://app.voicehire.io/api/v1/candidates/550e8400-e29b-41d4-a716-446655440000',
+  'https://staging.app.voicehire.io/api/v1/candidates/550e8400-e29b-41d4-a716-446655440000',
   {
     headers: {
       'X-API-Key': 'vh_live_XXXXXXXXXXXXX'

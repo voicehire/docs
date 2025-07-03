@@ -179,7 +179,7 @@ import requests
 def create_campaign(data):
     try:
         response = requests.post(
-            "https://app.voicehire.io/api/v1/campaigns/create",
+            "https://staging.app.voicehire.io/api/v1/campaigns/create",
             headers={"X-API-Key": API_KEY},
             json=data
         )
@@ -214,7 +214,7 @@ def create_campaign(data):
 async function addCandidates(campaignId, candidates) {
   try {
     const response = await fetch(
-      `https://app.voicehire.io/api/v1/campaigns/${campaignId}/candidates`,
+      `https://staging.app.voicehire.io/api/v1/campaigns/${campaignId}/candidates`,
       {
         method: 'POST',
         headers: {

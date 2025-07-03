@@ -34,7 +34,7 @@ app = Celery('voicehire')
 def add_candidate_batch(self, campaign_id, candidates):
     try:
         response = requests.post(
-            f"https://app.voicehire.io/api/v1/campaigns/{campaign_id}/candidates",
+            f"https://staging.app.voicehire.io/api/v1/campaigns/{campaign_id}/candidates",
             headers={"X-API-Key": API_KEY},
             json={"candidates": candidates}
         )
@@ -57,7 +57,7 @@ Créez un client API centralisé :
 class VoiceHireClient {
   constructor(apiKey) {
     this.apiKey = apiKey;
-    this.baseUrl = 'https://app.voicehire.io/api/v1';
+    this.baseUrl = 'https://staging.app.voicehire.io/api/v1';
   }
 
   async request(method, endpoint, data = null) {

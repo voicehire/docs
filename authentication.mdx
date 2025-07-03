@@ -11,7 +11,7 @@ L'API VoiceHire utilise une authentification par clé API pour sécuriser l'acc�
 
 Pour obtenir votre clé API :
 
-1. Connectez-vous à votre compte VoiceHire sur [app.voicehire.io](https://app.voicehire.io)
+1. Connectez-vous à votre compte VoiceHire sur [staging.app.voicehire.io](https://staging.app.voicehire.io)
 2. Accédez aux paramètres de votre agence
 3. Dans la section "API", générez une nouvelle clé API
 4. Copiez et conservez cette clé en lieu sûr
@@ -27,7 +27,7 @@ Incluez votre clé API dans l'en-tête `X-API-Key` de chaque requête :
 <CodeGroup>
 
 ```bash cURL
-curl -X GET https://app.voicehire.io/api/v1/campaigns \
+curl -X GET https://staging.app.voicehire.io/api/v1/campaigns \
   -H "X-API-Key: vh_live_VOTRE_CLE_API"
 ```
 
@@ -39,13 +39,13 @@ headers = {
 }
 
 response = httpx.get(
-    "https://app.voicehire.io/api/v1/campaigns",
+    "https://staging.app.voicehire.io/api/v1/campaigns",
     headers=headers
 )
 ```
 
 ```javascript Node.js
-const response = await fetch('https://app.voicehire.io/api/v1/campaigns', {
+const response = await fetch('https://staging.app.voicehire.io/api/v1/campaigns', {
   headers: {
     'X-API-Key': 'vh_live_VOTRE_CLE_API'
   }
@@ -56,7 +56,7 @@ const response = await fetch('https://app.voicehire.io/api/v1/campaigns', {
 $curl = curl_init();
 
 curl_setopt_array($curl, [
-  CURLOPT_URL => "https://app.voicehire.io/api/v1/campaigns",
+  CURLOPT_URL => "https://staging.app.voicehire.io/api/v1/campaigns",
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_HTTPHEADER => [
     "X-API-Key: vh_live_VOTRE_CLE_API"
@@ -127,7 +127,7 @@ headers = {
 
 # Utiliser la clé
 response = httpx.get(
-    "https://app.voicehire.io/api/v1/campaigns",
+    "https://staging.app.voicehire.io/api/v1/campaigns",
     headers=headers
 )
 ```

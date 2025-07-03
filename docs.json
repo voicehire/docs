@@ -10,16 +10,12 @@
   "favicon": "/favicon.png",
   "openapi": "/openapi.yaml",
   "api": {
-    "baseUrl": "https://staging.app.voicehire.io",
-    "mdx": {
-      "auth": {
-        "method": "key",
-        "name": "X-API-Key"
-      }
+    "auth": {
+      "method": "key",
+      "name": "X-API-Key"
     },
     "playground": {
-      "mode": "show",
-      "enabled": true
+      "mode": "show"
     }
   },
   "navigation": {

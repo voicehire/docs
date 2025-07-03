@@ -39,10 +39,8 @@ info:
     url: https://www.voicehire.io
 
 servers:
-  - url: https://staging.app.voicehire.io
-    description: Production
-  - url: http://localhost:8080
-    description: Développement local
+  - url: https://staging.app.voicehire.io/api/v1
+    description: Staging
 
 security:
   - ApiKeyAuth: []
@@ -300,7 +298,7 @@ components:
           description: Date de réinitialisation
 
 paths:
-  /api/v1/campaigns:
+  /campaigns:
     get:
       tags:
         - Campaigns
@@ -361,7 +359,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /api/v1/campaigns/create:
+  /campaigns/create:
     post:
       tags:
         - Campaigns
@@ -410,7 +408,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /api/v1/campaigns/{campaign_id}/candidates:
+  /campaigns/{campaign_id}/candidates:
     post:
       tags:
         - Campaigns
@@ -568,7 +566,7 @@ paths:
                       total_pages:
                         type: integer
 
-  /api/v1/campaigns/{campaign_id}/source:
+  /campaigns/{campaign_id}/source:
     post:
       tags:
         - Campaigns
@@ -634,7 +632,7 @@ paths:
                     items:
                       type: object
 
-  /api/v1/campaigns/{campaign_id}/status:
+  /campaigns/{campaign_id}/status:
     get:
       tags:
         - Campaigns
@@ -698,7 +696,7 @@ paths:
                   status:
                     type: string
 
-  /api/v1/candidates/{candidate_id}:
+  /candidates/{candidate_id}:
     get:
       tags:
         - Candidates
@@ -726,7 +724,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /api/v1/account/credits:
+  /account/credits:
     get:
       tags:
         - Account

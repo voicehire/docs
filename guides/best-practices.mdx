@@ -402,6 +402,3 @@ def verify_webhook_signature(request_body, signature, secret):
     return hmac.compare_digest(signature, expected)
 ```
 
-### 3. Limitation des permissions
-
-Créez des clés API avec des permissions minimales pour chaque usage.

@@ -39,7 +39,6 @@
             "group": "Guides",
             "pages": [
               "guides/webhooks",
-              "guides/rate-limits",
               "guides/errors",
               "guides/best-practices"
             ]

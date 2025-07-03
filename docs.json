@@ -17,7 +17,7 @@
       }
     },
     "playground": {
-      "mode": "show"
+      "mode": "interactive"
     }
   },
   "navigation": {

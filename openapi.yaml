@@ -39,7 +39,7 @@ info:
     url: https://www.voicehire.io
 
 servers:
-  - url: https://staging.app.voicehire.io/api/v1
+  - url: https://app.voicehire.io/api/v1
     description: Staging
 
 security:

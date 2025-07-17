@@ -78,7 +78,7 @@
       "anchors": [
         {
           "anchor": "Application VoiceHire",
-          "href": "https://staging.app.voicehire.io",
+          "href": "https://app.voicehire.io",
           "icon": "browser"
         },
         {
@@ -122,7 +122,7 @@
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://staging.app.voicehire.io"
+      "href": "https://app.voicehire.io"
     }
   }
 }

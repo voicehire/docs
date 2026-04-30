@@ -1,11 +1,13 @@
 ---
 title: 'Créer une campagne'
 openapi: 'POST /campaigns/create'
-description: 'Crée une nouvelle campagne de recrutement avec génération automatique ou personnalisation des questions'
+description: 'Crée une nouvelle campagne de recrutement avec génération automatique ou personnalisation des questions, des messages et de la voix de l''agent IA'
 playground: true
 ---
 
 ## Corps de la requête
+
+### Champs requis
 
 <ParamField body="job_title" type="string" required>
   Titre du poste à pourvoir
@@ -13,68 +15,135 @@ playground: true
 
 <ParamField body="contract_type" type="string" required>
   Type de contrat proposé
-  
-  Valeurs possibles:
+
+  Valeurs possibles (alignées sur le dashboard) :
   - `CDI` - Contrat à durée indéterminée
   - `CDD` - Contrat à durée déterminée
   - `Stage` - Convention de stage
-  - `Alternance` - Contrat d'alternance
+  - `Intérim` - Mission d'intérim
+  - `Contrat d'apprentissage`
+  - `Contrat de professionnalisation`
   - `Freelance` - Mission freelance
-  - `Interim` - Mission d'intérim
 </ParamField>
 
 <ParamField body="job_description" type="string" required>
   Description détaillée du poste, des responsabilités et du profil recherché
 </ParamField>
 
+### Métadonnées (optionnel)
+
 <ParamField body="additional_info" type="string">
-  Informations complémentaires sur le poste ou l'entreprise (optionnel)
+  Informations complémentaires sur le poste ou l'entreprise
 </ParamField>
 
 <ParamField body="client_name" type="string">
-  Nom de l'entreprise cliente (sera utilisé lors des appels) (optionnel)
+  Nom de l'entreprise cliente (sera utilisé lors des appels). Par défaut, le nom de l'agence.
 </ParamField>
 
+<ParamField body="language" type="string" default="fr">
+  Langue de la campagne (agent vocal, emails, SMS, interface candidat)
+
+  Valeurs possibles : `fr`, `en`, `es`
+</ParamField>
+
+### Questions personnalisées (optionnel)
+
 <ParamField body="questions" type="array">
-  Questions personnalisées pour l'entretien (maximum 8) (optionnel)
-  
-  Si non fourni, 6 questions seront générées automatiquement par IA
+  Questions personnalisées d'entretien (maximum 10).
+
+  Si non fourni, 6 questions sont générées automatiquement par IA depuis la description du poste.
 </ParamField>
 
 <ParamField body="question_weights" type="array">
-  Poids associés à chaque question (requis si des questions sont fournies) (optionnel)
-  
-  Valeurs possibles pour chaque poids: `0`, `0.5`, `1`, `1.5`, `2`
+  Poids associés à chaque question (requis si `questions` est fourni). Doit avoir la même longueur que `questions`.
+
+  Valeurs possibles pour chaque poids : `0`, `0.5`, `1`, `1.5`, `2`
 </ParamField>
 
-<ParamField body="enable_salary_question" type="boolean" default="true">
-  Activer la question sur les prétentions salariales (optionnel)
+<ParamField body="question_binary_evaluations" type="array">
+  Évaluation binaire (oui/non) par question (optionnel, requis avoir la même longueur que `questions` si fourni). Chaque élément est un booléen.
 </ParamField>
 
-<ParamField body="enable_job_search_question" type="boolean" default="true">
-  Activer la question sur la recherche d'emploi actuelle (optionnel)
+### Voix de l'agent IA (optionnel)
+
+<ParamField body="override_agent_id" type="string">
+  ID de la voix à utiliser. Récupérer la liste via [`GET /api/v1/voices`](/api-reference/account/list-voices).
+
+  Accepte soit un `agent_id` (voix par défaut VoiceHire) soit un `voice_id` (clone d'agence).
+
+  Le drapeau `is_voice_clone` est déduit automatiquement côté backend.
+</ParamField>
+
+### Toggles d'entretien (optionnel)
+
+<ParamField body="enable_salary_question" type="string" default="Non">
+  Format de la question sur les prétentions salariales
+
+  Valeurs possibles : `Non`, `Annuelles`, `Mensuelles`, `Horaires`
+</ParamField>
+
+<ParamField body="enable_job_search_question" type="boolean" default="false">
+  Demander si le candidat est en recherche active
 </ParamField>
 
 <ParamField body="enable_availability_question" type="boolean" default="true">
-  Activer la question sur la disponibilité (optionnel)
+  Demander la date de disponibilité du candidat
 </ParamField>
 
-<ParamField body="enable_engage" type="boolean" default="null">
-  Active la présentation de votre structure par l'agent VoiceHire (optionnel)
-  
-  Si fourni, surcharge le réglage global de l'agence
+<ParamField body="enable_introduction_question" type="boolean" default="true">
+  Demander au candidat de se présenter
 </ParamField>
 
-<ParamField body="enable_recapInterview" type="boolean" default="null">
-  Active l'explication du déroulé de l'entretien par l'agent VoiceHire (optionnel)
-  
-  Si fourni, surcharge le réglage global de l'agence
+<ParamField body="enable_engage" type="boolean">
+  VoiceHire Engage — message d'accroche en début d'entretien.
+
+  Si non fourni, hérite du défaut de l'agence.
 </ParamField>
 
-<ParamField body="enable_recapJob" type="boolean" default="null">
-  Active la présentation du poste par l'agent VoiceHire (optionnel)
-  
-  Si fourni, surcharge le réglage global de l'agence
+<ParamField body="engage_message" type="string">
+  Texte personnalisé d'accroche (350 caractères max). Utilisé uniquement si `enable_engage = true`.
+</ParamField>
+
+<ParamField body="enable_recapInterview" type="boolean">
+  Récap interview au candidat. Si non fourni, hérite du défaut de l'agence.
+</ParamField>
+
+<ParamField body="enable_recapJob" type="boolean">
+  Récap offre au candidat. Si non fourni, hérite du défaut de l'agence.
+</ParamField>
+
+<ParamField body="recap_job_message" type="string">
+  Texte personnalisé du récap offre (350 caractères max). Utilisé uniquement si `enable_recapJob = true`.
+</ParamField>
+
+<ParamField body="enable_close" type="boolean">
+  VoiceHire Close — message de clôture personnalisé. Si non fourni, hérite du défaut de l'agence.
+</ParamField>
+
+<ParamField body="close_message" type="string">
+  Texte personnalisé de clôture (350 caractères max). Utilisé uniquement si `enable_close = true`.
+</ParamField>
+
+### Sélection automatique (optionnel)
+
+<ParamField body="automatic_selection_threshold" type="number">
+  Score minimum pour la sélection automatique des candidats.
+
+  Valeurs possibles : `8.0`, `8.5`, `9.0`, `9.5`, `10.0`. `null` désactive.
+</ParamField>
+
+### Test linguistique (optionnel)
+
+<ParamField body="language_test_mode" type="string" default="none">
+  Mode test linguistique pendant l'entretien
+
+  Valeurs possibles : `none`, `english`, `spanish`, `italian`, `german`, `chinese`, `portuguese`, `arabic`
+</ParamField>
+
+<ParamField body="custom_language_question" type="string">
+  Question additionnelle pour le test linguistique. Nécessite `language_test_mode != "none"`.
+
+  Le backend la traduit automatiquement vers la langue cible via OpenAI.
 </ParamField>
 
 ## Réponse
@@ -82,8 +151,8 @@ playground: true
 <ResponseExample>
 ```json
 {
-  "campaign_id": "abc123def456",
-  "candidate_link": "https://app.voicehire.io/link/abc123def456",
+  "campaign_id": "abc123",
+  "candidate_link": "https://app.voicehire.io/apply/abc123",
   "status": "active",
   "questions_generated": 6
 }
@@ -103,7 +172,7 @@ playground: true
 </ResponseField>
 
 <ResponseField name="questions_generated" type="integer" required>
-  Nombre de questions générées pour l'entretien
+  Nombre de questions utilisées pour l'entretien (questions fournies ou générées par IA)
 </ResponseField>
 
 ## Exemple de requête
@@ -118,14 +187,17 @@ curl -X POST https://app.voicehire.io/api/v1/campaigns/create \
     "contract_type": "CDI",
     "job_description": "Nous recherchons un développeur Full Stack expérimenté...",
     "client_name": "TechCorp",
+    "language": "fr",
     "questions": [
-      "Quelle est votre expérience avec React et Node.js?",
-      "Avez-vous déjà travaillé en méthodologie Agile?"
+      "Quelle est votre expérience avec React et Node.js ?",
+      "Avez-vous déjà travaillé en méthodologie Agile ?"
     ],
     "question_weights": [2, 1.5],
-    "enable_salary_question": true,
-    "enable_engage": true,
-    "enable_recapInterview": false
+    "question_binary_evaluations": [false, true],
+    "enable_salary_question": "Annuelles",
+    "enable_close": true,
+    "close_message": "Merci pour votre temps, nous reviendrons vers vous sous 48h.",
+    "automatic_selection_threshold": 8.5
   }'
 ```
 
@@ -143,14 +215,17 @@ response = requests.post(
         "contract_type": "CDI",
         "job_description": "Nous recherchons un développeur Full Stack expérimenté...",
         "client_name": "TechCorp",
+        "language": "fr",
         "questions": [
-            "Quelle est votre expérience avec React et Node.js?",
-            "Avez-vous déjà travaillé en méthodologie Agile?"
+            "Quelle est votre expérience avec React et Node.js ?",
+            "Avez-vous déjà travaillé en méthodologie Agile ?"
         ],
         "question_weights": [2, 1.5],
-        "enable_salary_question": true,
-        "enable_engage": true,
-        "enable_recapInterview": false
+        "question_binary_evaluations": [False, True],
+        "enable_salary_question": "Annuelles",
+        "enable_close": True,
+        "close_message": "Merci pour votre temps, nous reviendrons vers vous sous 48h.",
+        "automatic_selection_threshold": 8.5
     }
 )
 ```
@@ -165,14 +240,17 @@ const response = await axios.post(
     contract_type: 'CDI',
     job_description: 'Nous recherchons un développeur Full Stack expérimenté...',
     client_name: 'TechCorp',
+    language: 'fr',
     questions: [
-      'Quelle est votre expérience avec React et Node.js?',
-      'Avez-vous déjà travaillé en méthodologie Agile?'
+      'Quelle est votre expérience avec React et Node.js ?',
+      'Avez-vous déjà travaillé en méthodologie Agile ?'
     ],
     question_weights: [2, 1.5],
-    enable_salary_question: true,
-    enable_engage: true,
-    enable_recapInterview: false
+    question_binary_evaluations: [false, true],
+    enable_salary_question: 'Annuelles',
+    enable_close: true,
+    close_message: 'Merci pour votre temps, nous reviendrons vers vous sous 48h.',
+    automatic_selection_threshold: 8.5
   },
   {
     headers: {
@@ -186,8 +264,19 @@ const response = await axios.post(
 
 ## Codes d'erreur
 
-| Code | Description |
-|------|-------------|
-| 400 | Données invalides (champs requis manquants, format incorrect) |
-| 401 | Clé API manquante ou invalide |
-| 402 | Crédits insuffisants pour créer une campagne |
+| Code | `code` | Description |
+|------|--------|-------------|
+| 400 | `MISSING_REQUIRED_FIELDS` | Champs requis manquants |
+| 400 | `INVALID_CONTRACT_TYPE` | Type de contrat invalide |
+| 400 | `INVALID_LANGUAGE` | Langue non supportée (utiliser `fr`, `en` ou `es`) |
+| 400 | `TOO_MANY_QUESTIONS` | Plus de 10 questions fournies |
+| 400 | `MISSING_QUESTION_WEIGHTS` | `question_weights` manquant alors que `questions` est fourni |
+| 400 | `WEIGHTS_MISMATCH` | Longueur de `question_weights` différente de `questions` |
+| 400 | `INVALID_WEIGHT_VALUE` | Poids hors de la plage `[0, 0.5, 1, 1.5, 2]` |
+| 400 | `BINARY_EVALUATIONS_MISMATCH` | Longueur de `question_binary_evaluations` différente de `questions` |
+| 400 | `INVALID_AUTOMATIC_SELECTION_THRESHOLD` | Seuil hors de la plage `[8.0, 8.5, 9.0, 9.5, 10.0]` |
+| 400 | `MESSAGE_TOO_LONG` | Un message dépasse 350 caractères |
+| 400 | `INVALID_OVERRIDE_AGENT_ID` | Voix introuvable ou non accessible par l'agence |
+| 400 | `CUSTOM_LANGUAGE_QUESTION_REQUIRES_TEST_MODE` | `custom_language_question` fourni sans `language_test_mode` |
+| 401 | `INVALID_API_KEY` / `MISSING_API_KEY` | Clé API manquante ou invalide |
+| 402 | `INSUFFICIENT_CREDITS` | Crédits insuffisants pour créer une campagne |

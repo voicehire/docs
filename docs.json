@@ -51,6 +51,7 @@
             "pages": [
               "api-reference/campaigns/list-campaigns",
               "api-reference/campaigns/create-campaign",
+              "api-reference/campaigns/update-campaign",
               "api-reference/campaigns/get-campaign-details",
               "api-reference/campaigns/get-campaign-status",
               "api-reference/campaigns/update-campaign-status"
@@ -68,7 +69,8 @@
           {
             "group": "Compte",
             "pages": [
-              "api-reference/account/get-credits"
+              "api-reference/account/get-credits",
+              "api-reference/account/list-voices"
             ]
           }
         ]

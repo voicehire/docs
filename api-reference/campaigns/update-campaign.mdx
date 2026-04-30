@@ -1,0 +1,212 @@
+---
+title: 'Modifier une campagne'
+openapi: 'PATCH /campaigns/{campaign_id}'
+description: 'Met à jour les champs fournis d''une campagne existante. Tous les champs sont optionnels.'
+playground: true
+---
+
+## Paramètres
+
+<ParamField path="campaign_id" type="string" required>
+  Identifiant unique de la campagne
+</ParamField>
+
+## Corps de la requête
+
+Tous les champs sont optionnels — seuls les champs fournis dans le payload sont modifiés. Si `questions` est fourni, l'ensemble des questions est remplacé (et `question_weights` devient obligatoire).
+
+### Métadonnées
+
+<ParamField body="job_title" type="string">
+  Titre du poste à pourvoir
+</ParamField>
+
+<ParamField body="contract_type" type="string">
+  Type de contrat (mêmes valeurs que la création)
+</ParamField>
+
+<ParamField body="job_description" type="string">
+  Description détaillée du poste
+</ParamField>
+
+<ParamField body="additional_info" type="string">
+  Informations complémentaires
+</ParamField>
+
+<ParamField body="client_name" type="string">
+  Nom de l'entreprise cliente
+</ParamField>
+
+<ParamField body="language" type="string">
+  Langue de la campagne (`fr`, `en`, `es`)
+</ParamField>
+
+### Voix de l'agent IA
+
+<ParamField body="override_agent_id" type="string">
+  Nouvel ID de voix. Récupérer la liste via [`GET /api/v1/voices`](/api-reference/account/list-voices).
+
+  Passer `null` réinitialise sur la voix par défaut de la langue de la campagne.
+</ParamField>
+
+### Questions
+
+<ParamField body="questions" type="array">
+  Liste de questions (max 10). Si fourni, remplace **toutes** les questions existantes.
+</ParamField>
+
+<ParamField body="question_weights" type="array">
+  Poids de chaque question (`0`, `0.5`, `1`, `1.5`, `2`). Requis si `questions` est fourni.
+</ParamField>
+
+<ParamField body="question_binary_evaluations" type="array">
+  Évaluation binaire (oui/non) par question.
+</ParamField>
+
+### Toggles d'entretien
+
+<ParamField body="enable_salary_question" type="string">
+  `Non`, `Annuelles`, `Mensuelles` ou `Horaires`
+</ParamField>
+
+<ParamField body="enable_job_search_question" type="boolean" />
+<ParamField body="enable_availability_question" type="boolean" />
+<ParamField body="enable_introduction_question" type="boolean" />
+<ParamField body="enable_engage" type="boolean" />
+<ParamField body="enable_recapInterview" type="boolean" />
+<ParamField body="enable_recapJob" type="boolean" />
+<ParamField body="enable_close" type="boolean" />
+
+### Messages personnalisés
+
+<ParamField body="engage_message" type="string">
+  Message d'accroche (350 caractères max). Passer `null` ou chaîne vide pour le retirer.
+</ParamField>
+
+<ParamField body="close_message" type="string">
+  Message de clôture (350 caractères max).
+</ParamField>
+
+<ParamField body="recap_job_message" type="string">
+  Message de récap offre (350 caractères max).
+</ParamField>
+
+### Sélection automatique
+
+<ParamField body="automatic_selection_threshold" type="number">
+  `8.0`, `8.5`, `9.0`, `9.5`, `10.0`, ou `null` pour désactiver.
+</ParamField>
+
+### Test linguistique
+
+<ParamField body="language_test_mode" type="string">
+  `none`, `english`, `spanish`, `italian`, `german`, `chinese`, `portuguese`, `arabic`.
+
+  Passer `none` efface aussi `custom_language_question`.
+</ParamField>
+
+<ParamField body="custom_language_question" type="string">
+  Question additionnelle (traduite automatiquement). Nécessite `language_test_mode != "none"`.
+</ParamField>
+
+## Réponse
+
+<ResponseExample>
+```json
+{
+  "campaign_id": "abc123",
+  "updated_at": "2026-04-30T14:23:11.123456"
+}
+```
+</ResponseExample>
+
+<ResponseField name="campaign_id" type="string" required>
+  Identifiant de la campagne modifiée
+</ResponseField>
+
+<ResponseField name="updated_at" type="string" required>
+  Timestamp ISO 8601 de la mise à jour
+</ResponseField>
+
+## Exemples
+
+<CodeGroup>
+```bash cURL
+# Activer le message de clôture
+curl -X PATCH https://app.voicehire.io/api/v1/campaigns/abc123 \
+  -H "X-API-Key: vh_live_XXXXXXXXXXXXX" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "enable_close": true,
+    "close_message": "Merci pour votre temps, nous reviendrons vers vous sous 48h."
+  }'
+```
+
+```bash cURL (remplacer les questions)
+curl -X PATCH https://app.voicehire.io/api/v1/campaigns/abc123 \
+  -H "X-API-Key: vh_live_XXXXXXXXXXXXX" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "questions": [
+      "Quelle est votre expérience avec Node.js ?",
+      "Préférez-vous le télétravail ou le présentiel ?"
+    ],
+    "question_weights": [2, 1],
+    "question_binary_evaluations": [false, true]
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.patch(
+    "https://app.voicehire.io/api/v1/campaigns/abc123",
+    headers={
+        "X-API-Key": "vh_live_XXXXXXXXXXXXX",
+        "Content-Type": "application/json"
+    },
+    json={
+        "automatic_selection_threshold": 9.0,
+        "enable_close": True,
+        "close_message": "Merci pour votre temps !"
+    }
+)
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.patch(
+  'https://app.voicehire.io/api/v1/campaigns/abc123',
+  {
+    automatic_selection_threshold: 9.0,
+    enable_close: true,
+    close_message: 'Merci pour votre temps !'
+  },
+  {
+    headers: {
+      'X-API-Key': 'vh_live_XXXXXXXXXXXXX',
+      'Content-Type': 'application/json'
+    }
+  }
+);
+```
+</CodeGroup>
+
+## Notes importantes
+
+- Pour changer uniquement le statut (`active`/`paused`/`completed`), utiliser plutôt [`PATCH /campaigns/{campaign_id}/status`](/api-reference/campaigns/update-campaign-status).
+- Si `questions` est fourni, **toutes** les questions existantes sont remplacées (pas de patch partiel sur les questions).
+- Le drapeau `is_voice_clone` est toujours déduit automatiquement depuis `override_agent_id`, vous ne devez pas l'envoyer.
+
+## Codes d'erreur
+
+| Code | `code` | Description |
+|------|--------|-------------|
+| 400 | `INVALID_CONTRACT_TYPE` | Type de contrat invalide |
+| 400 | `INVALID_LANGUAGE` | Langue non supportée |
+| 400 | `INVALID_OVERRIDE_AGENT_ID` | Voix introuvable ou non accessible |
+| 400 | `WEIGHTS_MISMATCH` / `BINARY_EVALUATIONS_MISMATCH` | Tableau de poids/évaluations incohérent |
+| 400 | `MESSAGE_TOO_LONG` | Message > 350 caractères |
+| 401 | `INVALID_API_KEY` / `MISSING_API_KEY` | Clé API invalide |
+| 404 | `CAMPAIGN_NOT_FOUND` | Campagne introuvable ou n'appartenant pas à votre agence |

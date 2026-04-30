@@ -1,0 +1,132 @@
+---
+title: "Lister les voix disponibles"
+openapi: "GET /voices"
+description: "Retourne les voix utilisables pour le paramètre override_agent_id lors de la création ou modification d'une campagne"
+playground: true
+---
+
+## Réponse
+
+L'endpoint retourne deux groupes de voix :
+
+- **`default_voices`** — voix VoiceHire par défaut, à utiliser via leur `agent_id`
+- **`voice_clones`** — clones vocaux de votre agence (status `ready`), à utiliser via leur `voice_id`
+
+<ResponseExample>
+```json
+{
+  "default_voices": [
+    {
+      "agent_id": "agent_xxx",
+      "voice_name": "Myriam",
+      "language": "fr",
+      "description": "Voix professionnelle française"
+    },
+    {
+      "agent_id": "agent_yyy",
+      "voice_name": "Susan",
+      "language": "en",
+      "description": "Professional English voice"
+    }
+  ],
+  "voice_clones": [
+    {
+      "voice_id": "clone_zzz",
+      "voice_clone_name": "Mon clone perso",
+      "language": "fr",
+      "preview_audio_url": "https://.../preview.mp3"
+    }
+  ]
+}
+```
+</ResponseExample>
+
+<ResponseField name="default_voices" type="array" required>
+  Voix par défaut VoiceHire (toutes agences).
+
+  <Expandable title="Propriétés">
+    <ResponseField name="agent_id" type="string" required>
+      ID à passer dans `override_agent_id` lors de la création/modification de campagne
+    </ResponseField>
+    <ResponseField name="voice_name" type="string" required>
+      Nom de la voix
+    </ResponseField>
+    <ResponseField name="language" type="string" required>
+      Code langue (`fr`, `en`, `es`)
+    </ResponseField>
+    <ResponseField name="description" type="string">
+      Description courte de la voix
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="voice_clones" type="array" required>
+  Clones vocaux de votre agence (status `ready` uniquement).
+
+  <Expandable title="Propriétés">
+    <ResponseField name="voice_id" type="string" required>
+      ID à passer dans `override_agent_id` lors de la création/modification de campagne
+    </ResponseField>
+    <ResponseField name="voice_clone_name" type="string" required>
+      Nom du clone
+    </ResponseField>
+    <ResponseField name="language" type="string" required>
+      Code langue (`fr`, `en`, `es`)
+    </ResponseField>
+    <ResponseField name="preview_audio_url" type="string">
+      URL d'aperçu audio (mp3) du clone, si disponible
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Exemple de requête
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://app.voicehire.io/api/v1/voices \
+  -H "X-API-Key: vh_live_XXXXXXXXXXXXX"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    "https://app.voicehire.io/api/v1/voices",
+    headers={"X-API-Key": "vh_live_XXXXXXXXXXXXX"}
+)
+
+voices = response.json()
+print(f"{len(voices['default_voices'])} voix par défaut")
+print(f"{len(voices['voice_clones'])} clone(s) d'agence")
+
+# Exemple : choisir la première voix française
+fr_voice = next((v for v in voices['default_voices'] if v['language'] == 'fr'), None)
+if fr_voice:
+    print(f"Voix FR par défaut : {fr_voice['agent_id']}")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.get(
+  'https://app.voicehire.io/api/v1/voices',
+  { headers: { 'X-API-Key': 'vh_live_XXXXXXXXXXXXX' } }
+);
+
+const { default_voices, voice_clones } = response.data;
+console.log(`${default_voices.length} voix par défaut, ${voice_clones.length} clone(s)`);
+```
+</CodeGroup>
+
+## Notes importantes
+
+- Pour utiliser une voix dans une campagne, passez son `agent_id` (voix par défaut) ou son `voice_id` (clone) dans le champ `override_agent_id` lors de la création (`POST /campaigns/create`) ou modification (`PATCH /campaigns/{campaign_id}`).
+- Le drapeau `is_voice_clone` est déduit automatiquement côté backend, vous n'avez pas à le passer.
+- Les clones d'agence apparaissent uniquement si leur status est `ready` (clonage terminé).
+
+## Codes d'erreur
+
+| Code | `code` | Description |
+|------|--------|-------------|
+| 401 | `INVALID_API_KEY` / `MISSING_API_KEY` | Clé API manquante ou invalide |
+| 500 | `INTERNAL_ERROR` | Erreur interne lors de la récupération des voix |

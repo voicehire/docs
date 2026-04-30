@@ -1,7 +1,7 @@
 ---
 title: "Ajouter des candidats"
 openapi: "POST /api/v1/campaigns/{campaign_id}/candidates"
-description: "Ajoute jusqu'à 100 candidats à une campagne et déclenche automatiquement les appels"
+description: "Ajoute jusqu'à 100 candidats à une campagne, en déclenchant soit un appel immédiat (mode call) soit un SMS d'invitation (mode sms)"
 playground: true
 ---
 
@@ -13,29 +13,36 @@ playground: true
 
 ## Corps de la requête
 
+<ParamField body="contact_mode" type="string" default="call">
+  Méthode de contact :
+
+  - `call` (défaut) — Appel téléphonique automatique immédiat. `email` requis pour chaque candidat.
+  - `sms` — SMS d'invitation avec lien personnalisé. Le candidat clique et lance lui-même la préqualification quand il le souhaite. `email` optionnel. Nécessite que l'agence ait un template SMS de sourcing configuré dans son dashboard.
+</ParamField>
+
 <ParamField body="candidates" type="array" required>
   Liste des candidats à ajouter (maximum 100)
-  
+
   <Expandable title="Propriétés de chaque candidat">
     <ParamField body="first_name" type="string" required>
       Prénom du candidat
     </ParamField>
-    
+
     <ParamField body="last_name" type="string" required>
       Nom de famille du candidat
     </ParamField>
-    
+
     <ParamField body="phone" type="string" required>
-      Numéro de téléphone français (06 ou 07)
-      
-      Formats acceptés:
+      Numéro de téléphone (format E.164, principalement FR)
+
+      Formats acceptés :
       - `0612345678`
       - `06 12 34 56 78`
       - `+33612345678`
     </ParamField>
-    
-    <ParamField body="email" type="string" required>
-      Adresse email du candidat
+
+    <ParamField body="email" type="string">
+      Adresse email du candidat. Requis si `contact_mode = "call"`, optionnel si `"sms"`.
     </ParamField>
   </Expandable>
 </ParamField>

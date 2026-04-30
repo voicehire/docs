@@ -152,9 +152,11 @@ const response = await axios.post(
 
 ## Notes importantes
 
-- Les candidats sourcés reçoivent un SMS d'invitation (nécessite un template SMS configuré)
-- Les candidats doivent cliquer sur le lien SMS pour s'inscrire et être appelés
-- L'email est optionnel mais recommandé pour le suivi
+- Les candidats sourcés reçoivent un SMS d'invitation (nécessite un template SMS configuré dans le dashboard de l'agence)
+- Les candidats cliquent sur le lien du SMS pour lancer eux-mêmes l'entretien de préqualification
+- L'email est optionnel pour les candidats sourcés (l'API d'appel immédiat le requiert en revanche)
+- **Coût : 0,25 crédit par SMS effectivement envoyé** (un candidat skippé pour doublon ou un SMS qui échoue ne consomme rien). Une trace est ajoutée dans l'historique des transactions de crédit (`transaction_type = sourcing`).
+- Cet endpoint est équivalent à `POST /api/v1/campaigns/{campaign_id}/candidates` avec `contact_mode: "sms"`.
 
 ## Codes d'erreur
 

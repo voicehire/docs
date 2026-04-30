@@ -182,9 +182,16 @@ const response = await axios.post(
 
 ## Notes importantes
 
-- Les candidats avec le même numéro de téléphone qu'un candidat existant seront ignorés
-- Les appels sont automatiquement déclenchés après l'ajout
+- Les candidats avec le même numéro de téléphone qu'un candidat existant dans la campagne sont ignorés (skipped)
 - Maximum 100 candidats par requête
+- Le coût en crédits dépend du `contact_mode` choisi :
+
+| `contact_mode` | Action | Coût par candidat traité avec succès |
+|---|---|---|
+| `call` (défaut) | Appel téléphonique automatique immédiat | **1 crédit** (`transaction_type = campaign`) |
+| `sms` | SMS d'invitation avec lien personnalisé | **0,25 crédit** (`transaction_type = sourcing`) |
+
+Aucun crédit n'est débité pour les candidats skippés (doublon), ni en cas d'échec d'envoi du SMS ou de mise en file d'appel.
 
 ## Codes d'erreur
 

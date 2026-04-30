@@ -628,6 +628,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/v1/campaigns/create:
     post:
       summary: Créer une campagne
       description: |
@@ -728,6 +729,99 @@ paths:
                   message: No credits available
                   details:
                     credits_available: 0
+
+  /api/v1/campaigns/{campaign_id}/details:
+    get:
+      summary: Obtenir les détails d'une campagne
+      description: |
+        Récupère tous les détails complets d'une campagne : informations générales,
+        questions d'entretien avec poids, et paramètres de configuration.
+      operationId: getCampaignDetails
+      tags:
+        - Campagnes
+      parameters:
+        - name: campaign_id
+          in: path
+          required: true
+          description: Identifiant unique de la campagne
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Détails de la campagne
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  campaign_id:
+                    type: string
+                  job_title:
+                    type: string
+                  contract_type:
+                    type: string
+                  job_description:
+                    type: string
+                  company_name:
+                    type: string
+                  client_company:
+                    type: string
+                    nullable: true
+                  additional_info:
+                    type: string
+                    nullable: true
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+                  status:
+                    type: string
+                    enum: [active, paused, completed]
+                  questions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        order:
+                          type: integer
+                        question:
+                          type: string
+                        weight:
+                          type: number
+                  campaign_settings:
+                    type: object
+                    properties:
+                      language_test_mode:
+                        type: string
+                      enable_salary_question:
+                        type: string
+                      enable_job_search_question:
+                        type: boolean
+                      enable_availability_question:
+                        type: boolean
+                      enable_engage:
+                        type: boolean
+                        nullable: true
+                      enable_recap_interview:
+                        type: boolean
+                        nullable: true
+                      enable_recap_job:
+                        type: boolean
+                        nullable: true
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Campagne non trouvée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/v1/campaigns/{campaign_id}:
     patch:

@@ -61,7 +61,6 @@
             "group": "Candidats",
             "pages": [
               "api-reference/candidates/add-candidates",
-              "api-reference/candidates/source-candidates",
               "api-reference/candidates/list-candidates",
               "api-reference/candidates/get-candidate-details"
             ]

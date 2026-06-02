@@ -1168,60 +1168,6 @@ paths:
                       total_pages:
                         type: integer
 
-  /api/v1/campaigns/{campaign_id}/source:
-    post:
-      summary: Sourcing de candidats
-      description: |
-        Ajoute des candidats en mode sourcing et envoie une invitation à passer l'entretien.
-        Canal principal SMS, avec **failover email** : si le `phone` est absent/invalide mais
-        qu'un `email` valide est fourni, l'invitation part par email. Au moins une coordonnée
-        valide (`phone` ou `email`) est requise par candidat.
-      operationId: sourceCandidates
-      tags:
-        - Candidats
-      parameters:
-        - name: campaign_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CandidateAddRequest'
-      responses:
-        '201':
-          description: Candidats sourcés avec succès
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  candidates_sourced:
-                    type: integer
-                    description: Nombre de candidats créés
-                  candidates_skipped:
-                    type: integer
-                    description: Nombre de doublons ignorés
-                  sms_sent:
-                    type: integer
-                    description: Nombre de SMS d'invitation envoyés
-                  emails_sent:
-                    type: integer
-                    description: Nombre d'emails d'invitation envoyés (failover)
-                  errors:
-                    type: array
-                    items:
-                      type: object
-              example:
-                candidates_sourced: 5
-                candidates_skipped: 0
-                sms_sent: 4
-                emails_sent: 1
-                errors: []
-
   /api/v1/candidates/{candidate_id}:
     get:
       summary: Détails d'un candidat

@@ -395,13 +395,15 @@ components:
       properties:
         contact_mode:
           type: string
-          enum: [call, sms]
+          enum: [call, sms, email]
           default: call
           description: |
             Méthode de contact :
-            - `call` (défaut) : appel téléphonique automatique immédiat. `email` est requis par candidat.
-            - `sms`  : SMS d'invitation avec lien personnalisé. `email` optionnel par candidat.
-              Nécessite que l'agence ait un template SMS de sourcing configuré.
+            - `call` (défaut) : appel téléphonique automatique immédiat. `email` requis par candidat.
+            - `sms`  : SMS d'invitation à passer l'entretien (0,25 crédit). **Failover email** : si le `phone` est absent/invalide mais qu'un `email` valide est fourni, l'invitation part par email (gratuit).
+            - `email` : email d'invitation à passer l'entretien (gratuit). **Failover SMS** : si l'`email` est absent/invalide mais qu'un `phone` valide est fourni, l'invitation part par SMS (0,25 crédit).
+
+            Pour `sms` et `email`, chaque candidat doit fournir au moins une coordonnée valide (`phone` OU `email`), sinon il est rejeté.
         candidates:
           type: array
           minItems: 1
@@ -428,7 +430,10 @@ components:
               email:
                 type: string
                 format: email
-                description: Email du candidat (requis si `contact_mode = call`, optionnel si `sms`)
+                description: >
+                  Email du candidat. Requis si `contact_mode = call`. Pour `sms`/`email`,
+                  au moins une coordonnée valide (`phone` ou `email`) est requise — le failover
+                  bascule automatiquement sur le canal disponible.
                 example: jean.dupont@example.com
 
     CandidateSummary:
@@ -1032,7 +1037,8 @@ paths:
     post:
       summary: Ajouter des candidats
       description: |
-        Ajoute des candidats à une campagne et déclenche automatiquement les appels téléphoniques.
+        Ajoute des candidats à une campagne et les contacte selon `contact_mode` :
+        appel automatique (`call`, défaut), SMS d'invitation (`sms`) ou email d'invitation (`email`).
         Maximum 100 candidats par requête.
       operationId: addCandidates
       tags:
@@ -1166,8 +1172,10 @@ paths:
     post:
       summary: Sourcing de candidats
       description: |
-        Ajoute des candidats en mode sourcing. Un SMS d'invitation est automatiquement
-        envoyé à chaque candidat avec un lien pour postuler.
+        Ajoute des candidats en mode sourcing et envoie une invitation à passer l'entretien.
+        Canal principal SMS, avec **failover email** : si le `phone` est absent/invalide mais
+        qu'un `email` valide est fourni, l'invitation part par email. Au moins une coordonnée
+        valide (`phone` ou `email`) est requise par candidat.
       operationId: sourceCandidates
       tags:
         - Candidats
@@ -1191,21 +1199,28 @@ paths:
               schema:
                 type: object
                 properties:
-                  sourced:
+                  candidates_sourced:
                     type: integer
-                    description: Nombre de candidats sourcés
+                    description: Nombre de candidats créés
+                  candidates_skipped:
+                    type: integer
+                    description: Nombre de doublons ignorés
                   sms_sent:
                     type: integer
-                    description: Nombre de SMS envoyés
-                  duplicates:
+                    description: Nombre de SMS d'invitation envoyés
+                  emails_sent:
                     type: integer
-                  invalid:
-                    type: integer
+                    description: Nombre d'emails d'invitation envoyés (failover)
+                  errors:
+                    type: array
+                    items:
+                      type: object
               example:
-                sourced: 5
-                sms_sent: 5
-                duplicates: 0
-                invalid: 0
+                candidates_sourced: 5
+                candidates_skipped: 0
+                sms_sent: 4
+                emails_sent: 1
+                errors: []
 
   /api/v1/candidates/{candidate_id}:
     get:

@@ -1,7 +1,7 @@
 ---
 title: "Sourcer des candidats"
 openapi: "POST /api/v1/campaigns/{campaign_id}/source"
-description: "Ajoute des candidats sourcés et leur envoie automatiquement un SMS d'invitation"
+description: "Ajoute des candidats sourcés et leur envoie une invitation à passer l'entretien par SMS, avec failover email"
 playground: true
 ---
 
@@ -25,12 +25,12 @@ playground: true
       Nom de famille du candidat
     </ParamField>
     
-    <ParamField body="phone" type="string" required>
-      Numéro de téléphone français (06 ou 07)
+    <ParamField body="phone" type="string">
+      Numéro de téléphone (format E.164, principalement FR). Au moins un de `phone` ou `email` valide est requis (failover).
     </ParamField>
     
     <ParamField body="email" type="string">
-      Adresse email du candidat (optionnelle)
+      Adresse email du candidat. Utilisée en **failover** si le `phone` est absent ou invalide. Au moins un de `phone` ou `email` valide est requis.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -43,7 +43,8 @@ playground: true
   "campaign_id": "abc123def456",
   "candidates_sourced": 8,
   "candidates_skipped": 2,
-  "sms_sent": 8,
+  "sms_sent": 7,
+  "emails_sent": 1,
   "errors": []
 }
 ```
@@ -62,7 +63,11 @@ playground: true
 </ResponseField>
 
 <ResponseField name="sms_sent" type="integer" required>
-  Nombre de SMS envoyés
+  Nombre de SMS d'invitation envoyés
+</ResponseField>
+
+<ResponseField name="emails_sent" type="integer" required>
+  Nombre d'emails d'invitation envoyés (failover quand le téléphone est absent/invalide)
 </ResponseField>
 
 <ResponseField name="errors" type="array">
@@ -152,17 +157,18 @@ const response = await axios.post(
 
 ## Notes importantes
 
-- Les candidats sourcés reçoivent un SMS d'invitation (nécessite un template SMS configuré dans le dashboard de l'agence)
-- Les candidats cliquent sur le lien du SMS pour lancer eux-mêmes l'entretien de préqualification
-- L'email est optionnel pour les candidats sourcés (l'API d'appel immédiat le requiert en revanche)
-- **Coût : 0,25 crédit par SMS effectivement envoyé** (un candidat skippé pour doublon ou un SMS qui échoue ne consomme rien). Une trace est ajoutée dans l'historique des transactions de crédit (`transaction_type = sourcing`).
+- Les candidats sourcés reçoivent une invitation à passer l'entretien par SMS, avec un lien personnalisé. Des templates par défaut (FR/EN/ES) sont utilisés si l'agence n'a pas configuré de template — aucune configuration préalable n'est requise.
+- **Failover email** : si un candidat n'a pas de `phone` valide mais un `email` valide, l'invitation lui est envoyée par email (gratuit) à la place. Au moins une coordonnée valide (`phone` ou `email`) est requise, sinon le candidat est rejeté.
+- Les candidats cliquent sur le lien reçu pour lancer eux-mêmes l'entretien de préqualification.
+- Détection de doublon par téléphone **ou** email.
+- **Coût : 0,25 crédit par SMS effectivement envoyé** (l'email est gratuit ; un candidat skippé pour doublon ou un envoi qui échoue ne consomme rien). Une trace est ajoutée dans l'historique des transactions de crédit (`transaction_type = sourcing`).
 - Cet endpoint est équivalent à `POST /api/v1/campaigns/{campaign_id}/candidates` avec `contact_mode: "sms"`.
 
 ## Codes d'erreur
 
 | Code | Description |
 |------|-------------|
-| 400 | Données invalides ou template SMS non configuré |
+| 400 | Données invalides (aucune coordonnée valide : ni `phone` ni `email`) |
 | 401 | Clé API manquante ou invalide |
 | 402 | Crédits insuffisants |
 | 404 | Campagne non trouvée |

@@ -1,7 +1,7 @@
 ---
 title: "Ajouter des candidats"
 openapi: "POST /api/v1/campaigns/{campaign_id}/candidates"
-description: "Ajoute jusqu'à 100 candidats à une campagne, en déclenchant soit un appel immédiat (mode call) soit un SMS d'invitation (mode sms)"
+description: "Ajoute jusqu'à 100 candidats à une campagne et les contacte selon contact_mode : appel immédiat (call), SMS d'invitation (sms) ou email d'invitation (email), avec failover SMS/email"
 playground: true
 ---
 
@@ -17,7 +17,10 @@ playground: true
   Méthode de contact :
 
   - `call` (défaut) — Appel téléphonique automatique immédiat. `email` requis pour chaque candidat.
-  - `sms` — SMS d'invitation avec lien personnalisé. Le candidat clique et lance lui-même la préqualification quand il le souhaite. `email` optionnel. Nécessite que l'agence ait un template SMS de sourcing configuré dans son dashboard.
+  - `sms` — SMS d'invitation à passer l'entretien, avec lien personnalisé (0,25 crédit). Le candidat clique et lance lui-même l'entretien quand il le souhaite. **Failover email** : si le `phone` est absent ou invalide mais qu'un `email` valide est fourni, l'invitation part par email (gratuit).
+  - `email` — Email d'invitation à passer l'entretien, avec lien personnalisé (gratuit). **Failover SMS** : si l'`email` est absent ou invalide mais qu'un `phone` valide est fourni, l'invitation part par SMS (0,25 crédit).
+
+  Pour `sms` et `email`, chaque candidat doit fournir au moins une coordonnée valide (`phone` ou `email`), sinon il est rejeté.
 </ParamField>
 
 <ParamField body="candidates" type="array" required>
@@ -32,8 +35,8 @@ playground: true
       Nom de famille du candidat
     </ParamField>
 
-    <ParamField body="phone" type="string" required>
-      Numéro de téléphone (format E.164, principalement FR)
+    <ParamField body="phone" type="string">
+      Numéro de téléphone (format E.164, principalement FR). Requis si `contact_mode = "call"`. Pour `sms`/`email`, au moins un de `phone` ou `email` doit être valide.
 
       Formats acceptés :
       - `0612345678`
@@ -42,7 +45,7 @@ playground: true
     </ParamField>
 
     <ParamField body="email" type="string">
-      Adresse email du candidat. Requis si `contact_mode = "call"`, optionnel si `"sms"`.
+      Adresse email du candidat. Requis si `contact_mode = "call"`. Pour `sms`/`email`, au moins un de `phone` ou `email` doit être valide (le failover bascule automatiquement sur le canal disponible).
     </ParamField>
   </Expandable>
 </ParamField>
@@ -65,6 +68,10 @@ playground: true
 }
 ```
 </ResponseExample>
+
+<Note>
+  L'exemple ci-dessus correspond au mode `call`. En modes `sms` et `email`, la réponse suit le format de [Sourcer des candidats](/api-reference/candidates/source-candidates) : `candidates_sourced`, `candidates_skipped`, `sms_sent`, `emails_sent`, `errors`.
+</Note>
 
 <ResponseField name="campaign_id" type="string" required>
   Identifiant de la campagne
@@ -182,16 +189,18 @@ const response = await axios.post(
 
 ## Notes importantes
 
-- Les candidats avec le même numéro de téléphone qu'un candidat existant dans la campagne sont ignorés (skipped)
+- Les candidats déjà présents dans la campagne (même téléphone **ou** même email) sont ignorés (skipped)
 - Maximum 100 candidats par requête
-- Le coût en crédits dépend du `contact_mode` choisi :
+- En modes `sms` et `email`, un **failover** s'applique par candidat : si le canal principal n'a pas de coordonnée valide, l'autre canal est utilisé s'il est disponible. Le coût facturé correspond au canal **réellement utilisé**.
+- Le coût en crédits dépend du canal effectivement utilisé :
 
-| `contact_mode` | Action | Coût par candidat traité avec succès |
+| Canal utilisé | Action | Coût par candidat traité avec succès |
 |---|---|---|
 | `call` (défaut) | Appel téléphonique automatique immédiat | **1 crédit** (`transaction_type = campaign`) |
 | `sms` | SMS d'invitation avec lien personnalisé | **0,25 crédit** (`transaction_type = sourcing`) |
+| `email` | Email d'invitation avec lien personnalisé | **Gratuit** |
 
-Aucun crédit n'est débité pour les candidats skippés (doublon), ni en cas d'échec d'envoi du SMS ou de mise en file d'appel.
+Aucun crédit n'est débité pour les candidats skippés (doublon), ni en cas d'échec d'envoi.
 
 ## Codes d'erreur
 
